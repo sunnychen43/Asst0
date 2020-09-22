@@ -107,7 +107,7 @@ typedef struct HashItem {
     struct HashItem *next;
 } HashItem;
 
-static HashItem *hashtab[HASHSIZE];
+static HashItem *ht_table[HASHSIZE];
 
 
 int _hash(char *s) {
@@ -119,7 +119,7 @@ int _hash(char *s) {
 }
 
 HashItem *ht_lookup(char *s) {
-	HashItem *p = hashtab[_hash(s)];
+	HashItem *p = ht_table[_hash(s)];
 	for (; p != NULL; p = p->next) {
 		if (strcmp(s, p->val) == 0) {
 			return p;
@@ -129,22 +129,21 @@ HashItem *ht_lookup(char *s) {
 }
 
 HashItem *ht_add(char *name) {
+    HashItem *p = malloc(sizeof(HashItem));
 	int hashval = _hash(name);
-
-	HashItem *p = malloc(sizeof(HashItem));
-	p->next = hashtab[hashval];
+    
 	p->val = malloc(strlen(name)+1);
 	strcpy(p->val, name);
 
-	hashtab[hashval] = p;
+    p->next = ht_table[hashval];
+	ht_table[hashval] = p;
 
 	return p;
 }
 
 void ht_free() {
 	for (int i=0; i < HASHSIZE; i++) {
-		HashItem *p = hashtab[i];
-		HashItem *tmp;
+		HashItem *tmp, *p = ht_table[i];
 		while (p != NULL) {
 			tmp = p->next;
 			free(p->val);
