@@ -6,22 +6,22 @@
 /*-----------------------------OPERATORS-------------------------------------*/
 typedef struct OP {
     char c, *name;
-    bool valid;
     struct OP *children;
     struct OP *next;
 } OP;
-static OP *op_LL;
 
-OP *init_op() {
+static OP *op_main;
+
+
+OP *op_init() {
     OP *op = malloc(sizeof(*op));
     op->name = NULL;
-    op->valid = false;
     op->children = NULL;
     op->next = NULL;
     return op;
 }
 
-void add_op(OP **head, char *op_chr, char *name) {
+void op_add(OP **head, char *op_chr, char *name) {
 
     OP *prev = NULL;
     OP *curr = *head;
@@ -29,39 +29,40 @@ void add_op(OP **head, char *op_chr, char *name) {
 
     /* Traverse through linked list until match or end */
     while (curr != NULL) {
-        if (curr->c == op_chr[0]) {
-            found = true;
-            break;
-        }
+        if (curr->c == op_chr[0]) {break;}
         prev = curr;
         curr = curr->next;
     }
 
-    if (!found) {
+    /* curr == NULL means no match, we need to init and insert a new op */
+    if (curr == NULL) {
+        /* If head is empty, insert there */
         if (*head == NULL) {
-            *head = init_op();
+            *head = op_init();
             curr = *head;
         }
+        /* Otherwise link with end of LL */
         else {
-            prev->next = init_op();
+            prev->next = op_init();
             curr = prev->next; 
         }
+        /* Set op char */
         curr->c = op_chr[0];
     }
     
+    /* If op_chr terminates, set current op name (curr op may not have a name) */
     if (strlen(op_chr) == 1) {
         curr->name = malloc(strlen(name) + 1);
         strcpy(curr->name, name);
-        curr->valid = true;
     }
     else {
-        add_op(&(curr->children), op_chr+1, name);
+        op_add(&(curr->children), op_chr+1, name);
     }
 
     return;
 }
 
-OP *search_op(OP *head, char c) {
+OP *op_search(OP *head, char c) {
     OP *curr = head;
     while (curr != NULL) {
         if (curr->c == c) {
@@ -72,27 +73,27 @@ OP *search_op(OP *head, char c) {
     return NULL;
 }
 
-void load() {
+void op_load_file() {
     FILE *fp = fopen("newops.txt", "r");
 
     char op_chr[5], name[30];
     while (fscanf(fp, "%s\t%[^\n]s\n", op_chr, name) != EOF) {
-        add_op(&op_LL, op_chr, name);
+        op_add(&op_main, op_chr, name);
     }
 }
 
-void printLL(OP *head, int level) { 
+void op_print(OP *head, int level) { 
     OP *curr = head;
     while (curr != NULL) {
         for (int i=0; i < level; i++) {
             printf("\t");
         }
         printf("%c ", curr->c);
-        if (curr->valid) {
+        if (curr->name != NULL) {
             printf("%s", curr->name);
         }
         printf("\n");
-        printLL(curr->children, level+1);
+        op_print(curr->children, level+1);
         curr = curr->next;
     }
 }
@@ -101,14 +102,15 @@ void printLL(OP *head, int level) {
 /*------------------------------HASHTABLE-------------------------------------*/
 
 #define HASHSIZE 37
-typedef struct T_Entry {
+typedef struct HashItem {
 	char *val;
-    struct T_Entry *next;
-} T_Entry;
-static T_Entry *hashtab[HASHSIZE];
+    struct HashItem *next;
+} HashItem;
+
+static HashItem *hashtab[HASHSIZE];
 
 
-int hash(char *s) {
+int _hash(char *s) {
     unsigned hashval;
     for (hashval = 0; *s != '\0'; s++) {
     	hashval = *s + 31 * hashval;
@@ -116,8 +118,8 @@ int hash(char *s) {
     return hashval % HASHSIZE;
 }
 
-T_Entry *T_lookup(char *s) {
-	T_Entry *p = hashtab[hash(s)];
+HashItem *ht_lookup(char *s) {
+	HashItem *p = hashtab[_hash(s)];
 	for (; p != NULL; p = p->next) {
 		if (strcmp(s, p->val) == 0) {
 			return p;
@@ -126,10 +128,10 @@ T_Entry *T_lookup(char *s) {
 	return NULL;
 }
 
-T_Entry *T_add(char *name) {
-	int hashval = hash(name);
+HashItem *ht_add(char *name) {
+	int hashval = _hash(name);
 
-	T_Entry *p = malloc(sizeof(T_Entry));
+	HashItem *p = malloc(sizeof(HashItem));
 	p->next = hashtab[hashval];
 	p->val = malloc(strlen(name)+1);
 	strcpy(p->val, name);
@@ -139,10 +141,10 @@ T_Entry *T_add(char *name) {
 	return p;
 }
 
-void T_free() {
+void ht_free() {
 	for (int i=0; i < HASHSIZE; i++) {
-		T_Entry *p = hashtab[i];
-		T_Entry *tmp;
+		HashItem *p = hashtab[i];
+		HashItem *tmp;
 		while (p != NULL) {
 			tmp = p->next;
 			free(p->val);
@@ -154,8 +156,8 @@ void T_free() {
 /*----------------------------------------------------------------------------*/
 
 int main() {
-    load();
-    // printLL(op_LL, 0);
+    op_load_file();
+    op_print(op_main, 0);
 
     char s[] = "+-";
 
@@ -169,13 +171,13 @@ int main() {
 
 
         OP *prev = NULL;
-        OP *curr = op_LL;
+        OP *curr = op_main;
         int j = i;
         for (; j < strlen(s); j++) {
             if (curr == NULL) {break;}
 
             char peek = s[j];
-            OP *res = search_op(curr, peek);
+            OP *res = op_search(curr, peek);
 
             if (res == NULL) {break;}
 
@@ -192,9 +194,9 @@ int main() {
         }
     }
 
-    printf("%d\n", T_lookup("asdf") == NULL);
-    T_add("asdf");
-    printf("%d\n", T_lookup("asdf") == NULL);
+    printf("%d\n", ht_lookup("asdf") == NULL);
+    ht_add("asdf");
+    printf("%d\n", ht_lookup("asdf") == NULL);
 
     return 0;
 }
