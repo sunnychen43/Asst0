@@ -1,0 +1,9 @@
+*
+!/**/
+!*.*
+
+.vscode/
+*.exe
+.DS_Store
+
+lexer.exe
