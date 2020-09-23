@@ -160,6 +160,8 @@ void ht_free() {
 }
 /*----------------------------------------------------------------------------*/
 
+/*--------------------------------NUMBER--------------------------------------*/
+
 int oneOf(char a, char* b) { //checks if a is contained in b, returns 1 if so, 0 otherwise
     int i = 0;
     int length = strlen(b); //be sure that b includes a nul terminator
@@ -278,12 +280,16 @@ int flo(char* arg, int index) { //bug rn with consecutive decimals and no space,
     }
     return -1;
 }
+/*----------------------------------------------------------------------------*/
+
+/*---------------------------------WORD---------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
 int main() {
     op_load_file();
     // op_print(op_main, 0);
 
-    char s[] = "+,++,+++,+++0.23.->-10x8881";
+    char s[] = "numbers 972 0x972 A8 0XA8 XA8 0972 072";
 
     int i=0;
     while (i < strlen(s)) {
@@ -310,7 +316,7 @@ int main() {
         }
 
         if (prev != NULL) {
-            printf("%s\n", prev->name);
+            printf("%s %.*s\n", prev->name, j-i, s+i);
             i = j;
             continue;
         }
@@ -322,7 +328,6 @@ int main() {
         int peek_ind;
         for (int j=0; j < 4; j++) {
             peek_ind = (f_ptr[j])(s, i);
-            
             if (peek_ind != i) {
                 i = peek_ind-1;
                 break;
@@ -330,6 +335,19 @@ int main() {
         }
 
         /* Word */
+        if (isalpha(c)) {
+            printf("word %c", c);
+
+            int j=i+1;
+            while (j < strlen(s)) {
+                if (!isalnum(s[j])) {break;}
+                printf("%c", s[j]);
+                j++;
+            }
+            printf("\n");
+            i = j;
+            continue;
+        }
         i++;
     }
 
