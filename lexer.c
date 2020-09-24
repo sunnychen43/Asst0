@@ -86,6 +86,8 @@ void op_load_file() {
     while (fscanf(fp, "%s\t%[^\n]s\n", op_chr, name) != EOF) {
         op_add(&op_main, op_chr, name);
     }
+
+    fclose(fp);
 }
 
 void op_print(OP *head, int level) { 
@@ -107,7 +109,7 @@ void op_print(OP *head, int level) {
 
 /*------------------------------HASHTABLE-------------------------------------*/
 
-#define HASHSIZE 37
+#define HASHSIZE 43  /* 32 expected entries, hashsize = prime close to size*1.3 */
 typedef struct HashItem {
 	char *val;
     struct HashItem *next;
@@ -283,17 +285,55 @@ int flo(char* arg, int index) { //bug rn with consecutive decimals and no space,
 /*----------------------------------------------------------------------------*/
 
 /*---------------------------------WORD---------------------------------------*/
+void word_load_file() {
+    FILE *fp = fopen("reserved.txt", "r");
+
+    char buf[10];
+    while (fscanf(fp, "%s\n", buf) != EOF) {
+        ht_add(buf);
+    }
+}
 /*----------------------------------------------------------------------------*/
 
-int main() {
-    op_load_file();
-    // op_print(op_main, 0);
-
-    char s[] = "numbers 972 0x972 A8 0XA8 XA8 0972 072";
-
+void scan(char *s) {
     int i=0;
     while (i < strlen(s)) {
         char c = s[i];
+
+        /* skip comments */
+        if (c == '/' && s[i+1] == '*') {
+            bool found = false;
+            int j=i+2;
+            for (; j < strlen(s)-1; j++) {
+                if (s[j] == '*' && s[j+1] == '/') {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                i = j+2;
+                continue;
+            }
+        }
+
+        /* skip quotes */
+        if (c == '\"' || c == '\'') {
+            bool found = false;
+            int j = i+1;
+            for (; j < strlen(s); j++) {
+                if (s[j] == c) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found) {
+                printf("string \"%.*s\"\n", j-i-1, s+i+1);
+                i = j+1;
+                continue;
+            }
+        }
+
 
         if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
             i++; continue;
@@ -314,9 +354,9 @@ int main() {
             prev = res;
             curr = res->children;
         }
-
+        /* OP found, update index and print op */
         if (prev != NULL) {
-            printf("%s %.*s\n", prev->name, j-i, s+i);
+            printf("%s %.*s\n", prev->name, j-i, s+i); /* '.*' specifies length of string to print */
             i = j;
             continue;
         }
@@ -324,11 +364,10 @@ int main() {
         /* Number */
         /* Array of function pointers*/
         int (*f_ptr[])(char *, int) = {&hex, &oct, &dec, &flo}; 
-
         int peek_ind;
         for (int j=0; j < 4; j++) {
             peek_ind = (f_ptr[j])(s, i);
-            if (peek_ind != i) {
+            if (peek_ind > i) {
                 i = peek_ind-1;
                 break;
             }
@@ -336,24 +375,40 @@ int main() {
 
         /* Word */
         if (isalpha(c)) {
-            printf("word %c", c);
-
             int j=i+1;
             while (j < strlen(s)) {
                 if (!isalnum(s[j])) {break;}
-                printf("%c", s[j]);
                 j++;
             }
-            printf("\n");
+
+            /* check for reserved word */
+            char *word = malloc(j-i+1);
+            strncpy(word, s+i, j-i);
+            word[j-i] = '\0';
+
+            if (ht_lookup(word) != NULL) {  /* keyword found */
+                printf("keyword \"%s\"\n", word, word);
+            }
+            else {
+                printf("word \"%s\"\n", word);
+            }
+
             i = j;
             continue;
         }
+
         i++;
     }
+}
 
-    // printf("%d\n", ht_lookup("asdf") == NULL);
-    // ht_add("asdf");
-    // printf("%d\n", ht_lookup("asdf") == NULL);
+int main() {
+    op_load_file();
+    word_load_file();
+    // op_print(op_main, 0);
+
+    char s[] = "";
+
+    scan(s);
 
     return 0;
 }
