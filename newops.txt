@@ -39,3 +39,5 @@
 &   AND/address operator
 -	minus/subtract operator
 *	multiply/dereference operator
+"   double quote
+'   single quote
