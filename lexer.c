@@ -2,13 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
-#include <stdlib.h>
-#include <stdio.h>
 #include <ctype.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <string.h>
 
 /*-----------------------------OPERATORS-------------------------------------*/
 typedef struct OP {
