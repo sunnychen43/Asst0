@@ -406,7 +406,7 @@ int main() {
     word_load_file();
     // op_print(op_main, 0);
 
-    char s[] = "";
+    char s[] = "asdfasdf";
 
     scan(s);
 
