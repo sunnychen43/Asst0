@@ -209,7 +209,7 @@ int hex(char* arg, int index) { //returns -1 if no hex found, returns new starti
     //congrats, we have a hex, how long is it?
     printf("hex integer ");
     printf("%s", firstTwo);
-    while (oneOf(arg[idx], acceptable)) {
+    while (is_hex(arg[idx])) {
         printf("%c", arg[idx]);
         idx++;
     }
@@ -286,9 +286,6 @@ int scan_float(char* arg, int index) { //bug rn with consecutive decimals and no
         while (is_dec(arg[idx])) {
             printf("%c", arg[idx]);
             idx++;
-        }
-        if (arg[idx] == "e") {
-            
         }
         printf("\n");
         return idx; 
@@ -425,7 +422,7 @@ int main() {
     word_load_file();
     // op_print(op_main, 0);
 
-    char s[] = "1.1";
+    char s[] = "0X111";
     scan(s);
 
     return 0;
