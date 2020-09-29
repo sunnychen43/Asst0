@@ -2,13 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
-#include <stdlib.h>
-#include <stdio.h>
 #include <ctype.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <string.h>
 
 /*-----------------------------OPERATORS-------------------------------------*/
 typedef struct OP {
@@ -22,6 +16,11 @@ static OP *op_main;
 
 OP *op_init() {
     OP *op = malloc(sizeof(*op));
+    if (op == NULL) {
+        printf("malloc op failed. Aborting...\n");
+        exit(EXIT_FAILURE);
+    }
+
     op->name = NULL;
     op->children = NULL;
     op->next = NULL;
@@ -59,6 +58,10 @@ void op_add(OP **head, char *op_chr, char *name) {
     /* If op_chr terminates, set current op name (curr op may not have a name) */
     if (strlen(op_chr) == 1) {
         curr->name = malloc(strlen(name) + 1);
+        if (curr->name == NULL) {
+            printf("malloc op->name failed. Aborting...\n");
+            exit(EXIT_FAILURE);
+        }
         strcpy(curr->name, name);
     }
     else {
@@ -138,11 +141,19 @@ HashItem *ht_lookup(char *s) {
 
 HashItem *ht_add(char *name) {
     HashItem *p = malloc(sizeof(HashItem));
-	int hashval = _hash(name);
-    
+    if (p == NULL) {
+        printf("malloc ht failed. Aborting...\n");
+        exit(EXIT_FAILURE);
+    }
+
 	p->val = malloc(strlen(name)+1);
+    if (p->val == NULL) {
+        printf("malloc ht->val failed. Aborting...\n");
+        exit(EXIT_FAILURE);
+    }
 	strcpy(p->val, name);
 
+    int hashval = _hash(name);
     p->next = ht_table[hashval];
 	ht_table[hashval] = p;
 
@@ -173,6 +184,10 @@ int oneOf(char a, char* b) { //checks if a is contained in b, returns 1 if so, 0
         }
     }
     return 0;
+}
+
+bool is_dec(char c) {
+    return c <= '9' && c >= '0';
 }
 
 int is_hex(char a) { //checks if hex
@@ -231,55 +246,44 @@ int oct(char* arg, int index) { //returns -1 if no octal, new index if octal is 
     return -1;
 }
 
-int dec(char* arg, int index) {
+int scan_dec(char* arg, int index) {
     int idx = index;
-    char* acceptable = "1234567890";
-    if (!oneOf(arg[idx], acceptable)) {
+    if (!is_dec(arg[idx])) {
         return index; //not a decimal or float
     }
     //ok we start with a number
-    while (oneOf(arg[idx], acceptable)) {
+    while (is_dec(arg[idx])) {
         idx++;
     }
-    if (arg[idx] == '.' && oneOf(arg[++idx], acceptable)) { //need to include e-24 is 5e-4 is a decimal
+    if (arg[idx] == '.' && is_dec(arg[idx+1])) { //need to include e-24 is 5e-4 is a decimal
         return index;
     }
-    else {
-        printf("decimal ");
-        for (int i = index; i < idx; i++) {
-            printf("%c", arg[i]);
-        }
-        printf("\n");
-        return idx;
+
+    printf("decimal ");
+    for (int i = index; i < idx; i++) {
+        printf("%c", arg[i]);
     }
-    return -1;
+    printf("\n");
+    return idx;
 }
 
-/*----------------------------------------------------------------------------*/
-
-/*---------------------------------FLOAT--------------------------------------*/
-
-int flo(char* arg, int index) { //bug rn with consecutive decimals and no space, ie 324.324.234
+int scan_float(char* arg, int index) { //bug rn with consecutive decimals and no space, ie 324.324.234
     int idx = index;
-    int decimalPoint = 0; //boolean, 0 if decimal point not found yet
-    char* acceptable = "1234567890";
-    if (!oneOf(arg[idx], acceptable)) {
-        if (!oneOf(arg[idx], ".")) {
-            return index; //must be a word
-        }
-        decimalPoint = 1;
+    bool has_decpoint = false; //boolean, 0 if decimal point not found yet
+    if (!is_dec(arg[idx])) {
+        return index;
     }
     //ok we have a float
     printf("float ");
-    while (oneOf(arg[idx], acceptable)) {
+    while (is_dec(arg[idx])) {
         printf("%c", arg[idx]);
         idx++;
     }
-    if (arg[idx] == '.' && !decimalPoint) { //need to include e-24 is 5e-4 is a decimal
+
+    if (arg[idx] == '.') {
         printf(".");
         idx++; //increment so we're past the decimal point
-        decimalPoint = 1; //not really necessary, but for the sake of completeness
-        while (oneOf(arg[idx], acceptable)) {
+        while (is_dec(arg[idx])) {
             printf("%c", arg[idx]);
             idx++;
         }
@@ -289,10 +293,7 @@ int flo(char* arg, int index) { //bug rn with consecutive decimals and no space,
         printf("\n");
         return idx; 
     }
-    else { //we're done here, new token has started
-        printf("\n");
-        return idx; 
-    }
+    
     return -1;
 }
 /*----------------------------------------------------------------------------*/
@@ -376,7 +377,7 @@ void scan(char *s) {
 
         /* Number */
         /* Array of function pointers*/
-        int (*f_ptr[])(char *, int) = {&hex, &oct, &dec, &flo}; 
+        int (*f_ptr[])(char *, int) = {&hex, &oct, &scan_dec, &scan_float}; 
         int peek_ind;
         for (int j=0; j < 4; j++) {
             peek_ind = (f_ptr[j])(s, i);
@@ -396,6 +397,11 @@ void scan(char *s) {
 
             /* check for reserved word */
             char *word = malloc(j-i+1);
+            if (word == NULL) {
+                printf("malloc word failed. Aborting...\n");
+                exit(EXIT_FAILURE);
+            }
+            
             strncpy(word, s+i, j-i);
             word[j-i] = '\0';
 
@@ -419,8 +425,7 @@ int main() {
     word_load_file();
     // op_print(op_main, 0);
 
-    char s[] = ".5";
-
+    char s[] = "1.1";
     scan(s);
 
     return 0;
