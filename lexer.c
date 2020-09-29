@@ -175,9 +175,15 @@ int oneOf(char a, char* b) { //checks if a is contained in b, returns 1 if so, 0
     return 0;
 }
 
+int is_hex(char a) { //checks if hex
+    if (('0' <= a && a <='9') || ('a' <= a && a <='f') || ('A' <= a && a <='F')) {
+        return 1;
+    }
+    return 0;
+}
+
 int hex(char* arg, int index) { //returns -1 if no hex found, returns new starting index if hex found
     int idx = index;
-    char* acceptable = "1234567890abcdefABCDEF";
     char* firstTwo = malloc(3*sizeof(char)); //firstTwo holds the first two char from arg, starting at index
     firstTwo[0] = arg[idx++];
     firstTwo[1] = arg[idx++]; //i need to check for null pointer here
@@ -249,6 +255,10 @@ int dec(char* arg, int index) {
     return -1;
 }
 
+/*----------------------------------------------------------------------------*/
+
+/*---------------------------------FLOAT--------------------------------------*/
+
 int flo(char* arg, int index) { //bug rn with consecutive decimals and no space, ie 324.324.234
     int idx = index;
     int decimalPoint = 0; //boolean, 0 if decimal point not found yet
@@ -272,6 +282,9 @@ int flo(char* arg, int index) { //bug rn with consecutive decimals and no space,
         while (oneOf(arg[idx], acceptable)) {
             printf("%c", arg[idx]);
             idx++;
+        }
+        if (arg[idx] == "e") {
+            
         }
         printf("\n");
         return idx; 
@@ -406,7 +419,7 @@ int main() {
     word_load_file();
     // op_print(op_main, 0);
 
-    char s[] = "";
+    char s[] = ".5";
 
     scan(s);
 
