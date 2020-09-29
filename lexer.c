@@ -190,9 +190,15 @@ bool is_dec(char c) {
     return c <= '9' && c >= '0';
 }
 
+int is_hex(char a) { //checks if hex
+    if (('0' <= a && a <='9') || ('a' <= a && a <='f') || ('A' <= a && a <='F')) {
+        return 1;
+    }
+    return 0;
+}
+
 int hex(char* arg, int index) { //returns -1 if no hex found, returns new starting index if hex found
     int idx = index;
-    char* acceptable = "1234567890abcdefABCDEF";
     char* firstTwo = malloc(3*sizeof(char)); //firstTwo holds the first two char from arg, starting at index
     firstTwo[0] = arg[idx++];
     firstTwo[1] = arg[idx++]; //i need to check for null pointer here
@@ -280,6 +286,9 @@ int scan_float(char* arg, int index) { //bug rn with consecutive decimals and no
         while (is_dec(arg[idx])) {
             printf("%c", arg[idx]);
             idx++;
+        }
+        if (arg[idx] == "e") {
+            
         }
         printf("\n");
         return idx; 
@@ -417,7 +426,6 @@ int main() {
     // op_print(op_main, 0);
 
     char s[] = "1.1";
-
     scan(s);
 
     return 0;
