@@ -83,14 +83,31 @@ OP *op_search(OP *head, char c) {
 }
 
 void op_load_file() {
-    FILE *fp = fopen("newops.txt", "r");
+    // FILE *fp = fopen("newops.txt", "r");
 
+    // char op_chr[5], name[30];
+    // while (fscanf(fp, "%s\t%[^\n]s\n", op_chr, name) != EOF) {
+    //     op_add(&op_main, op_chr, name);
+    // }
+
+    const char *s[43] = {
+                            "( left parenthesis", ") right parenthesis", "[ left bracket", "] right bracket", 
+                            ". structure member", "-> structure pointer", ", comma", "! negate", "~ 1s complement", ">> shift right", 
+                            "<< shift left", "^ bitwise XOR", "| bitwise OR", "++ increment", "-- decrement", 
+                            "+ addition", "/ division", "|| logical OR", "&& logical AND", "? conditional true", 
+                            ": conditional false", "== equality test", "!=  inequality test", "< less than test", "> greater than test", 
+                            "<= less than or equal test", ">= greater than or equal test", "= assignment", "+= plus equals", "-= minus equals", 
+                            "*= times equals", "/= divide equals", "\%= mod equals", ">>= shift right equals", "<<= shift left equals", 
+                            "&= bitwise AND equals", "^= bitwise XOR equals", "|= bitwise OR equals", "& AND/address operator",  
+                            "- minus/subtract operator", "* multiply/dereference operator", "\" double quote", "\' single quote"
+                        };
+    
     char op_chr[5], name[30];
-    while (fscanf(fp, "%s\t%[^\n]s\n", op_chr, name) != EOF) {
+
+    for (int i=0; i < 43; i++) {
+        sscanf(s[i], "%s %[^\n]s", op_chr, name);
         op_add(&op_main, op_chr, name);
     }
-
-    fclose(fp);
 }
 
 void op_print(OP *head, int level) { 
@@ -121,7 +138,7 @@ typedef struct HashItem {
 static HashItem *ht_table[HASHSIZE];
 
 
-int _hash(char *s) {
+int _hash(const char *s) {
     unsigned hashval;
     for (hashval = 0; *s != '\0'; s++) {
     	hashval = *s + 31 * hashval;
@@ -129,7 +146,7 @@ int _hash(char *s) {
     return hashval % HASHSIZE;
 }
 
-HashItem *ht_lookup(char *s) {
+HashItem *ht_lookup(const char *s) {
 	HashItem *p = ht_table[_hash(s)];
 	for (; p != NULL; p = p->next) {
 		if (strcmp(s, p->val) == 0) {
@@ -139,7 +156,7 @@ HashItem *ht_lookup(char *s) {
 	return NULL;
 }
 
-HashItem *ht_add(char *name) {
+HashItem *ht_add(const char *name) {
     HashItem *p = malloc(sizeof(HashItem));
     if (p == NULL) {
         printf("malloc ht failed. Aborting...\n");
@@ -187,7 +204,7 @@ bool is_oct(char c) {
     return c <= '7' && c >= '0';
 }
 
-int scan_hex(char* arg, int index) { //returns -1 if no hex found, returns new starting index if hex found
+int scan_hex(const char* arg, int index) { //returns -1 if no hex found, returns new starting index if hex found
     int idx = index;
     char* firstTwo = malloc(3*sizeof(char)); //firstTwo holds the first two char from arg, starting at index
     firstTwo[0] = arg[idx++];
@@ -208,7 +225,7 @@ int scan_hex(char* arg, int index) { //returns -1 if no hex found, returns new s
     return idx; //this was all coded assuming 0x is a hex, change if otherwise
 }
 
-int scan_oct(char* arg, int index) { //returns -1 if no octal, new index if octal is found
+int scan_oct(const char* arg, int index) { //returns -1 if no octal, new index if octal is found
     int idx = index;
     if (arg[idx] != '0') {
         return index; //not a oct
@@ -233,7 +250,7 @@ int scan_oct(char* arg, int index) { //returns -1 if no octal, new index if octa
     }
 }
 
-int scan_dec(char* arg, int index) {
+int scan_dec(const char* arg, int index) {
     int idx = index;
     if (!is_dec(arg[idx])) {
         return index; //not a decimal or float
@@ -254,7 +271,7 @@ int scan_dec(char* arg, int index) {
     return idx;
 }
 
-int scan_float(char* arg, int index) { //bug rn with consecutive decimals and no space, ie 324.324.234
+int scan_float(const char* arg, int index) { //bug rn with consecutive decimals and no space, ie 324.324.234
     int idx = index;
     bool has_decpoint = false; //boolean, 0 if decimal point not found yet
     if (!is_dec(arg[idx])) {
@@ -284,11 +301,23 @@ int scan_float(char* arg, int index) { //bug rn with consecutive decimals and no
 
 /*---------------------------------WORD---------------------------------------*/
 void word_load_file() {
-    FILE *fp = fopen("reserved.txt", "r");
+    // FILE *fp = fopen("reserved.txt", "r");
 
-    char buf[10];
-    while (fscanf(fp, "%s\n", buf) != EOF) {
-        ht_add(buf);
+    // char buf[10];
+    // while (fscanf(fp, "%s\n", buf) != EOF) {
+    //     ht_add(buf);
+    // }
+
+    const char *s[32] = {   
+                            "auto", "break", "case", "char", "const", "continue", "default", 
+                            "do", "double", "else", "enum", "extern", "float", "for", 
+                            "goto", "if", "int", "long", "register", "return", "short", 
+                            "signed", "sizeof", "static", "struct", "switch", "typedef", "union", 
+                            "unsigned", "void", "volatile", "while" 
+                        };
+
+    for (int i=0; i < 32; i++) {
+        ht_add(s[i]);
     }
 }
 /*----------------------------------------------------------------------------*/
@@ -361,7 +390,7 @@ void scan(char *s) {
 
         /* Number */
         /* Array of function pointers*/
-        int (*f_ptr[])(char *, int) = {&scan_hex, &scan_oct, &scan_dec, &scan_float}; 
+        int (*f_ptr[])(const char *, int) = {&scan_hex, &scan_oct, &scan_dec, &scan_float}; 
         int peek_ind;
         for (int j=0; j < 4; j++) {
             peek_ind = (f_ptr[j])(s, i);
@@ -409,7 +438,7 @@ int main() {
     word_load_file();
     // op_print(op_main, 0);
 
-    char s[] = "012333399.1";
+    char s[] = "ehehsdfunion union . union.)";
     scan(s);
 
     return 0;
