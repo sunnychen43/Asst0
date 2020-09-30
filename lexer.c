@@ -175,29 +175,19 @@ void ht_free() {
 
 /*--------------------------------NUMBER--------------------------------------*/
 
-int oneOf(char a, char* b) { //checks if a is contained in b, returns 1 if so, 0 otherwise
-    int i = 0;
-    int length = strlen(b); //be sure that b includes a nul terminator
-    for (i = 0; i < length; i++) {
-        if (a == b[i]) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
 bool is_dec(char c) {
     return c <= '9' && c >= '0';
 }
 
-int is_hex(char a) { //checks if hex
-    if (('0' <= a && a <='9') || ('a' <= a && a <='f') || ('A' <= a && a <='F')) {
-        return 1;
-    }
-    return 0;
+bool is_hex(char c) { //checks if hex
+    return ('0' <= c && c <='9') || ('a' <= c && c <='f') || ('A' <= c && c <='F');
 }
 
-int hex(char* arg, int index) { //returns -1 if no hex found, returns new starting index if hex found
+bool is_oct(char c) {
+    return c <= '7' && c >= '0';
+}
+
+int scan_hex(char* arg, int index) { //returns -1 if no hex found, returns new starting index if hex found
     int idx = index;
     char* firstTwo = malloc(3*sizeof(char)); //firstTwo holds the first two char from arg, starting at index
     firstTwo[0] = arg[idx++];
@@ -218,21 +208,19 @@ int hex(char* arg, int index) { //returns -1 if no hex found, returns new starti
     return idx; //this was all coded assuming 0x is a hex, change if otherwise
 }
 
-int oct(char* arg, int index) { //returns -1 if no octal, new index if octal is found
+int scan_oct(char* arg, int index) { //returns -1 if no octal, new index if octal is found
     int idx = index;
-    char* acceptable = "12345670";
-    char* decimal = "89";
-    if (!(arg[idx] == '0')) {
-        return index; //not a hex
+    if (arg[idx] != '0') {
+        return index; //not a oct
     }
     //congrats, we have a oct, how long is it?
-    while (oneOf(arg[idx], acceptable)) { //just realized, why doesn't this go over the size of arg?
+    while (is_oct(arg[idx])) { //just realized, why doesn't this go over the size of arg?
         idx++;
     }
-    if (oneOf(arg[idx], decimal)) {
+    if (arg[idx] == '8' || arg[idx] == '9') {
         return index;
     }
-    if (arg[idx] == '.' && oneOf(arg[++idx], "1234567890")) { //need to include e-24 is 5e-4 is a decimal
+    else if (arg[idx] == '.' && is_dec(arg[idx+1])) { //need to include e-24 is 5e-4 is a decimal
         return index;
     }
     else {
@@ -243,7 +231,6 @@ int oct(char* arg, int index) { //returns -1 if no octal, new index if octal is 
         printf("\n");
         return idx; //this was all coded assuming 0x is a hex, change if otherwise
     }
-    return -1;
 }
 
 int scan_dec(char* arg, int index) {
@@ -374,7 +361,7 @@ void scan(char *s) {
 
         /* Number */
         /* Array of function pointers*/
-        int (*f_ptr[])(char *, int) = {&hex, &oct, &scan_dec, &scan_float}; 
+        int (*f_ptr[])(char *, int) = {&scan_hex, &scan_oct, &scan_dec, &scan_float}; 
         int peek_ind;
         for (int j=0; j < 4; j++) {
             peek_ind = (f_ptr[j])(s, i);
@@ -422,7 +409,7 @@ int main() {
     word_load_file();
     // op_print(op_main, 0);
 
-    char s[] = "0X111";
+    char s[] = "012333399.1";
     scan(s);
 
     return 0;
