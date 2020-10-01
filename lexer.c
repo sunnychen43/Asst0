@@ -27,7 +27,7 @@ OP *op_init() {
     return op;
 }
 
-void op_add(OP **head, char *op_chr, char *name) {
+void op_add(OP **head, const char *op_chr, const char *name) {
     OP *prev = NULL;
     OP *curr = *head;
     bool found = false;
@@ -90,7 +90,7 @@ void op_load_file() {
     //     op_add(&op_main, op_chr, name);
     // }
 
-    const char *s[43] = {
+    const char *OP_DATA[43] = {
                             "( left parenthesis", ") right parenthesis", "[ left bracket", "] right bracket", 
                             ". structure member", "-> structure pointer", ", comma", "! negate", "~ 1s complement", ">> shift right", 
                             "<< shift left", "^ bitwise XOR", "| bitwise OR", "++ increment", "-- decrement", 
@@ -105,7 +105,7 @@ void op_load_file() {
     char op_chr[5], name[30];
 
     for (int i=0; i < 43; i++) {
-        sscanf(s[i], "%s %[^\n]s", op_chr, name);
+        sscanf(OP_DATA[i], "%s %[^\n]s", op_chr, name);
         op_add(&op_main, op_chr, name);
     }
 }
@@ -206,22 +206,22 @@ bool is_oct(char c) {
 
 int scan_hex(const char* arg, int index) { //returns -1 if no hex found, returns new starting index if hex found
     int idx = index;
-    char* firstTwo = malloc(3*sizeof(char)); //firstTwo holds the first two char from arg, starting at index
-    firstTwo[0] = arg[idx++];
-    firstTwo[1] = arg[idx++]; //i need to check for null pointer here
-    firstTwo[2] = '\0';
-    if (strcmp(firstTwo, "0x") && strcmp(firstTwo, "0X")) {
+
+    if (arg[idx] != '0' || (arg[idx+1] != 'x' && arg[idx+1] != 'X')) {
         return index; //not a hex
     }
+
     //congrats, we have a hex, how long is it?
-    printf("hex integer ");
-    printf("%s", firstTwo);
+    printf("hex \"");
+    printf("%c%c", arg[idx], arg[idx+1]);
+    idx += 2;
+
     while (is_hex(arg[idx])) {
         printf("%c", arg[idx]);
         idx++;
     }
-    printf("\n");
-    free(firstTwo);
+    printf("\"\n");
+
     return idx; //this was all coded assuming 0x is a hex, change if otherwise
 }
 
@@ -241,11 +241,11 @@ int scan_oct(const char* arg, int index) { //returns -1 if no octal, new index i
         return index;
     }
     else {
-        printf("octal integer ");
+        printf("octal \"");
         for (int i = index; i < idx; i++) {
             printf("%c", arg[i]);
         }
-        printf("\n");
+        printf("\n\"");
         return idx; //this was all coded assuming 0x is a hex, change if otherwise
     }
 }
@@ -263,11 +263,11 @@ int scan_dec(const char* arg, int index) {
         return index;
     }
 
-    printf("decimal ");
+    printf("decimal \"");
     for (int i = index; i < idx; i++) {
         printf("%c", arg[i]);
     }
-    printf("\n");
+    printf("\"\n");
     return idx;
 }
 
@@ -278,7 +278,7 @@ int scan_float(const char* arg, int index) { //bug rn with consecutive decimals 
         return index;
     }
     //ok we have a float
-    printf("float ");
+    printf("float \"");
     while (is_dec(arg[idx])) {
         printf("%c", arg[idx]);
         idx++;
@@ -291,7 +291,7 @@ int scan_float(const char* arg, int index) { //bug rn with consecutive decimals 
             printf("%c", arg[idx]);
             idx++;
         }
-        printf("\n");
+        printf("\"\n");
         return idx; 
     }
     
@@ -308,7 +308,7 @@ void word_load_file() {
     //     ht_add(buf);
     // }
 
-    const char *s[32] = {   
+    const char *WORD_DATA[32] = {   
                             "auto", "break", "case", "char", "const", "continue", "default", 
                             "do", "double", "else", "enum", "extern", "float", "for", 
                             "goto", "if", "int", "long", "register", "return", "short", 
@@ -317,12 +317,12 @@ void word_load_file() {
                         };
 
     for (int i=0; i < 32; i++) {
-        ht_add(s[i]);
+        ht_add(WORD_DATA[i]);
     }
 }
 /*----------------------------------------------------------------------------*/
 
-void scan(char *s) {
+void scan(const char *s) {
     int i=0;
     while (i < strlen(s)) {
         char c = s[i];
@@ -383,21 +383,27 @@ void scan(char *s) {
         }
         /* OP found, update index and print op */
         if (prev != NULL) {
-            printf("%s %.*s\n", prev->name, j-i, s+i); /* '.*' specifies length of string to print */
+            printf("%s \"%.*s\"\n", prev->name, j-i, s+i); /* '.*' specifies length of string to print */
             i = j;
             continue;
         }
 
         /* Number */
         /* Array of function pointers*/
+        bool found = false;
         int (*f_ptr[])(const char *, int) = {&scan_hex, &scan_oct, &scan_dec, &scan_float}; 
         int peek_ind;
         for (int j=0; j < 4; j++) {
             peek_ind = (f_ptr[j])(s, i);
             if (peek_ind > i) {
+                found = true;
                 i = peek_ind-1;
                 break;
             }
+        }
+
+        if (found) {
+            continue;
         }
 
         /* Word */
@@ -429,6 +435,7 @@ void scan(char *s) {
             continue;
         }
 
+        printf("unknown char \"%c\"\n", s[i]);
         i++;
     }
 }
@@ -438,7 +445,7 @@ int main() {
     word_load_file();
     // op_print(op_main, 0);
 
-    char s[] = "ehehsdfunion union . union.)";
+    char s[] = " `";
     scan(s);
 
     return 0;
