@@ -217,6 +217,7 @@ void ht_free() {
 /*----------------------------------------------------------------------------*/
 
 /*--------------------------------NUMBER--------------------------------------*/
+
 /* Returns true if char c is an acceptable character for decimals */
 bool is_dec(char c) {
     return (c <= '9') && (c >= '0');
@@ -232,8 +233,17 @@ bool is_oct(char c) {
     return c <= '7' && c >= '0';
 }
 
-/* checks if the next available token is a hexadecimal, and returns the index the next token starts at.
-Will return the same index inputed if no hexadecimal token is found */
+/* 
+ * Checks if the next available token is a hexadecimal, and returns the index the next token starts at.
+ * 
+ * Parameters
+ *     contant char* c - input string
+ *     int index - index of current character in the original string
+ * Precondition
+ *     index is less than the length of the arg char array
+ * Returns
+ *     integer index of the first character next token (returns parameter index if no hexadecimal is found)
+ */
 int scan_hex(const char* arg, int index) {
     int idx = index;
 
@@ -255,8 +265,17 @@ int scan_hex(const char* arg, int index) {
     return idx;
 }
 
-/* checks if the next available token is a octal, and returns the index the next token starts at.
-Will return the same index inputed if no octal token is found */
+/* 
+ * Checks if the next available token is a octal, and returns the index the next token starts at.
+ * 
+ * Parameters
+ *     contant char* c - input string
+ *     int index - index of current character in the original string
+ * Precondition
+ *     index is less than the length of the arg char array
+ * Returns
+ *     integer index of the first character next token (returns parameter index if no octal is found)
+ */
 int scan_oct(const char* arg, int index) {
     int idx = index;
     if (arg[idx] != '0') {
@@ -286,8 +305,17 @@ int scan_oct(const char* arg, int index) {
     }
 }
 
-/* checks if the next available token is a decimal, and returns the index the next token starts at.
-Will return the same index inputed if no decimal token is found */
+/* 
+ * Checks if the next available token is a decimal, and returns the index the next token starts at.
+ * 
+ * Parameters
+ *     contant char* c - input string
+ *     int index - index of current character in the original string
+ * Precondition
+ *     index is less than the length of the arg char array
+ * Returns
+ *     integer index of the first character next token (returns parameter index if no decimal is found)
+ */
 int scan_dec(const char* arg, int index) {
     int idx = index;
     if (!is_dec(arg[idx])) {
@@ -311,8 +339,17 @@ int scan_dec(const char* arg, int index) {
     return idx;
 }
 
-/* checks if the next available token is a float, and returns the index the next token starts at.
-Will return the same index inputed if no float token is found */
+/* 
+ * Checks if the next available token is a float, and returns the index the next token starts at.
+ * 
+ * Parameters
+ *     contant char* c - input string
+ *     int index - index of current character in the original string
+ * Precondition
+ *     index is less than the length of the arg char array
+ * Returns
+ *     integer index of the first character next token (returns parameter index if no float is found)
+ */
 int scan_float(const char* arg, int index) {
     int idx = index;
     /* boolean denoting if a decimal point has been observed in the token*/
@@ -483,7 +520,7 @@ int main() {
     word_load_file();
     // op_print(op_main, 0);
 
-    char s[] = "1231231 asdfa123123 123a";
+    char s[] = "123.12.2.2.31";
     scan(s);
 
     return 0;
