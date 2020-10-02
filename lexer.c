@@ -5,16 +5,31 @@
 #include <ctype.h>
 
 /*-----------------------------OPERATORS-------------------------------------*/
-/* Defines the operator structure "OP", that contains a char, and pointers to two OP structures, children and next. */
+
+/* 
+ * operators are stored as a LL, each node also contains children that
+ * share the same prefix. (ex: '-' will contain '->' and '--' as children) 
+ */
 typedef struct OP {
     char c, *name;
     struct OP *children;
     struct OP *next;
 } OP;
 
+/* global head of LL */
 static OP *op_main;
 
-/* Initializes op structure using malloc and sets all members to null before returning a pointer to the structure */
+/* 
+ * Initializes OP struct nodes. Memory will be allocated only to the struct itself,
+ * the name, children, and next fields are set to NULL.
+ * 
+ * Parameters
+ *     None
+ * Precondition
+ *     None
+ * Returns
+ *     OP* pointer to allocated struct
+ */
 OP *op_init() {
     OP *op = malloc(sizeof(*op));
     if (op == NULL) {
@@ -28,7 +43,20 @@ OP *op_init() {
     return op;
 }
 
-/* Initializes op structure using malloc and sets all members to null before returning a pointer to the structure */
+/* 
+ * Creates a op node and inserts into head. Each node can only contain 1 char,
+ * so will call itself recursivly untill all characters in op_chr have been 
+ * inserted.
+ * 
+ * Parameters
+ *     OP **head - double pointer to head of LL
+ *     const char *op_chr - operator chars
+ *     const char *name - operator name
+ * Precondition
+ *     op_chr and name are valid char arrays, not NULL
+ * Returns
+ *     None
+ */
 void op_add(OP **head, const char *op_chr, const char *name) {
     OP *prev = NULL;
     OP *curr = *head;
@@ -73,6 +101,20 @@ void op_add(OP **head, const char *op_chr, const char *name) {
     return;
 }
 
+/* 
+ * Creates a op node and inserts into head. Each node can only contain 1 char,
+ * so will call itself recursivly untill all characters in op_chr have been 
+ * inserted.
+ * 
+ * Parameters
+ *     OP **head - double pointer to head of LL
+ *     const char *op_chr - operator chars
+ *     const char *name - operator name
+ * Precondition
+ *     op_chr and name are valid char arrays, not NULL
+ * Returns
+ *     None
+ */
 OP *op_search(OP *head, char c) {
     OP *curr = head;
     while (curr != NULL) {
@@ -84,47 +126,29 @@ OP *op_search(OP *head, char c) {
     return NULL;
 }
 
-void op_load_file() {
-    // FILE *fp = fopen("newops.txt", "r");
+void op_load_data() {
 
-    // char op_chr[5], name[30];
-    // while (fscanf(fp, "%s\t%[^\n]s\n", op_chr, name) != EOF) {
-    //     op_add(&op_main, op_chr, name);
-    // }
-
-    const char *OP_DATA[43] = {
-                            "( left parenthesis", ") right parenthesis", "[ left bracket", "] right bracket", 
-                            ". structure member", "-> structure pointer", ", comma", "! negate", "~ 1s complement", ">> shift right", 
-                            "<< shift left", "^ bitwise XOR", "| bitwise OR", "++ increment", "-- decrement", 
-                            "+ addition", "/ division", "|| logical OR", "&& logical AND", "? conditional true", 
-                            ": conditional false", "== equality test", "!=  inequality test", "< less than test", "> greater than test", 
-                            "<= less than or equal test", ">= greater than or equal test", "= assignment", "+= plus equals", "-= minus equals", 
-                            "*= times equals", "/= divide equals", "\%= mod equals", ">>= shift right equals", "<<= shift left equals", 
-                            "&= bitwise AND equals", "^= bitwise XOR equals", "|= bitwise OR equals", "& AND/address operator",  
-                            "- minus/subtract operator", "* multiply/dereference operator", "\" double quote", "\' single quote"
-                        };
+    /* char[] array of all operators and their names */
+    /* the operator and its name are seperated by a space */
+    const char *OP_DATA[43] = 
+        {
+            "( left parenthesis", ") right parenthesis", "[ left bracket", "] right bracket", 
+            ". structure member", "-> structure pointer", ", comma", "! negate", "~ 1s complement", 
+            ">> shift right", "<< shift left", "^ bitwise XOR", "| bitwise OR", "++ increment", 
+            "-- decrement", "+ addition", "/ division", "|| logical OR", "&& logical AND", 
+            "? conditional true", ": conditional false", "== equality test", "!=  inequality test", 
+            "< less than test", "> greater than test", "<= less than or equal test", ">= greater than or equal test", 
+            "= assignment", "+= plus equals", "-= minus equals", "*= times equals", "/= divide equals",  
+            "\%= mod equals", ">>= shift right equals", "<<= shift left equals", "&= bitwise AND equals",  
+            "^= bitwise XOR equals", "|= bitwise OR equals", "& AND/address operator", "- minus/subtract operator", 
+            "* multiply/dereference operator", "\" double quote", "\' single quote"
+        };
     
+    /* load each operator into op_main */
     char op_chr[5], name[30];
-
     for (int i=0; i < 43; i++) {
-        sscanf(OP_DATA[i], "%s %[^\n]s", op_chr, name);
+        sscanf(OP_DATA[i], "%s %[^\n]s", op_chr, name); /* parse the char[] in OP_DATA */
         op_add(&op_main, op_chr, name);
-    }
-}
-
-void op_print(OP *head, int level) { 
-    OP *curr = head;
-    while (curr != NULL) {
-        for (int i=0; i < level; i++) {
-            printf("\t");
-        }
-        printf("%c ", curr->c);
-        if (curr->name != NULL) {
-            printf("%s", curr->name);
-        }
-        printf("\n");
-        op_print(curr->children, level+1);
-        curr = curr->next;
     }
 }
 /*----------------------------------------------------------------------------*/
@@ -257,8 +281,8 @@ int scan_oct(const char* arg, int index) {
         for (int i = index; i < idx; i++) {
             printf("%c", arg[i]);
         }
-        printf("\n\"");
-        return idx;
+        printf("\"\n");
+        return idx; //this was all coded assuming 0x is a hex, change if otherwise
     }
 }
 
@@ -320,13 +344,6 @@ int scan_float(const char* arg, int index) {
 
 /*---------------------------------WORD---------------------------------------*/
 void word_load_file() {
-    // FILE *fp = fopen("reserved.txt", "r");
-
-    // char buf[10];
-    // while (fscanf(fp, "%s\n", buf) != EOF) {
-    //     ht_add(buf);
-    // }
-
     const char *WORD_DATA[32] = {   
                             "auto", "break", "case", "char", "const", "continue", "default", 
                             "do", "double", "else", "enum", "extern", "float", "for", 
@@ -342,6 +359,9 @@ void word_load_file() {
 /*----------------------------------------------------------------------------*/
 
 void scan(const char *s) {
+    /* scan num functions */
+    int (*f_ptr[])(const char *, int) = {&scan_hex, &scan_oct, &scan_dec, &scan_float};
+
     int i=0;
     while (i < strlen(s)) {
         char c = s[i];
@@ -349,79 +369,78 @@ void scan(const char *s) {
         /* skip comments */
         if (c == '/' && s[i+1] == '*') {
             bool found = false;
-            int j=i+2;
+
+            int j=i+2; /* first two char are comment, skip them */
             for (; j < strlen(s)-1; j++) {
                 if (s[j] == '*' && s[j+1] == '/') {
                     found = true;
                     break;
                 }
             }
+
+            /* skip ahead if found */
             if (found) {
-                i = j+2;
+                i = j+2; /* j is at '*' of comment */
                 continue;
             }
         }
 
-        /* skip quotes */
+        /* catch quotes */
         if (c == '\"' || c == '\'') {
             bool found = false;
-            int j = i+1;
+
+            int j = i+1; /* skip first quote */
             for (; j < strlen(s); j++) {
-                if (s[j] == c) {
+                if (s[j] == c) { /* make sure quotes match */
                     found = true;
                     break;
                 }
             }
 
             if (found) {
-                printf("string \"%.*s\"\n", j-i-1, s+i+1);
+                printf("string \"%.*s\"\n", j-i-1, s+i+1); /* j-i-1 is string len, s+i+1 is starting pos */
                 i = j+1;
                 continue;
             }
         }
 
-
+        /* skip terminators */
         if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
             i++; continue;
         }
 
-        /* Detect operator */
+        /* catch operators */
         OP *prev = NULL;
         OP *curr = op_main;
         int j = i;
         for (; j < strlen(s); j++) {
-            if (curr == NULL) {break;}
+            if (curr == NULL) {break;} /* op has been found and cant be longer */
 
-            char peek = s[j];
-            OP *res = op_search(curr, peek);
+            OP *res = op_search(curr, s[j]);
 
-            if (res == NULL) {break;}
+            if (res == NULL) {break;} /* match not found */
 
             prev = res;
             curr = res->children;
         }
-        /* OP found, update index and print op */
+
+        /* OP found, increase index and print op */
+        /* prev will be set if match is found */
         if (prev != NULL) {
             printf("%s \"%.*s\"\n", prev->name, j-i, s+i); /* '.*' specifies length of string to print */
             i = j;
             continue;
         }
 
-        /* Number */
-        /* Array of function pointers*/
-        bool found = false;
-        int (*f_ptr[])(const char *, int) = {&scan_hex, &scan_oct, &scan_dec, &scan_float}; 
-        int peek_ind;
-        for (int j=0; j < 4; j++) {
-            peek_ind = (f_ptr[j])(s, i);
-            if (peek_ind > i) {
-                found = true;
-                i = peek_ind-1;
-                break;
+        /* catch number */
+        if (isdigit(c)) {
+            for (int j=0; j < 4; j++) {
+                int peek_ind = (f_ptr[j])(s, i);
+                if (peek_ind > i) {
+                    i = peek_ind;
+                    break;
+                }
             }
-        }
-
-        if (found) {
             continue;
         }
 
@@ -444,7 +463,7 @@ void scan(const char *s) {
             word[j-i] = '\0';
 
             if (ht_lookup(word) != NULL) {  /* keyword found */
-                printf("keyword \"%s\"\n", word, word);
+                printf("keyword \"%s\"\n", word);
             }
             else {
                 printf("word \"%s\"\n", word);
@@ -460,11 +479,11 @@ void scan(const char *s) {
 }
 
 int main() {
-    op_load_file();
+    op_load_data();
     word_load_file();
     // op_print(op_main, 0);
 
-    char s[] = "0x98"; //test "`"
+    char s[] = "1231231 asdfa123123 123a";
     scan(s);
 
     return 0;
