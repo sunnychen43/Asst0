@@ -5,6 +5,7 @@
 #include <ctype.h>
 
 /*-----------------------------OPERATORS-------------------------------------*/
+/* Defines the operator structure "OP", that contains a char, and pointers to two OP structures, children and next. */
 typedef struct OP {
     char c, *name;
     struct OP *children;
@@ -13,7 +14,7 @@ typedef struct OP {
 
 static OP *op_main;
 
-
+/* Initializes op structure using malloc and sets all members to null before returning a pointer to the structure */
 OP *op_init() {
     OP *op = malloc(sizeof(*op));
     if (op == NULL) {
@@ -27,6 +28,7 @@ OP *op_init() {
     return op;
 }
 
+/* Initializes op structure using malloc and sets all members to null before returning a pointer to the structure */
 void op_add(OP **head, const char *op_chr, const char *name) {
     OP *prev = NULL;
     OP *curr = *head;
@@ -191,78 +193,92 @@ void ht_free() {
 /*----------------------------------------------------------------------------*/
 
 /*--------------------------------NUMBER--------------------------------------*/
-
+/* Returns true if char c is an acceptable character for decimals */
 bool is_dec(char c) {
-    return c <= '9' && c >= '0';
+    return (c <= '9') && (c >= '0');
 }
 
+/* Returns true if char c is an acceptable character for hexadecimals */
 bool is_hex(char c) { //checks if hex
     return ('0' <= c && c <='9') || ('a' <= c && c <='f') || ('A' <= c && c <='F');
 }
 
+/* Returns true if char c is an acceptable character for octals */
 bool is_oct(char c) {
     return c <= '7' && c >= '0';
 }
 
-int scan_hex(const char* arg, int index) { //returns -1 if no hex found, returns new starting index if hex found
+/* checks if the next available token is a hexadecimal, and returns the index the next token starts at.
+Will return the same index inputed if no hexadecimal token is found */
+int scan_hex(const char* arg, int index) {
     int idx = index;
 
     if (arg[idx] != '0' || (arg[idx+1] != 'x' && arg[idx+1] != 'X')) {
-        return index; //not a hex
+        /* not a hexadecimal */
+        return index;
     }
 
-    //congrats, we have a hex, how long is it?
+    /* hexadecimal token has been found, print out the hexadecimal identified 0x or 0X */
     printf("hex \"");
     printf("%c%c", arg[idx], arg[idx+1]);
     idx += 2;
-
+    /* print all acceptable hexadecimal values, note there could be no values */
     while (is_hex(arg[idx])) {
         printf("%c", arg[idx]);
         idx++;
     }
     printf("\"\n");
-
-    return idx; //this was all coded assuming 0x is a hex, change if otherwise
+    return idx;
 }
 
-int scan_oct(const char* arg, int index) { //returns -1 if no octal, new index if octal is found
+/* checks if the next available token is a octal, and returns the index the next token starts at.
+Will return the same index inputed if no octal token is found */
+int scan_oct(const char* arg, int index) {
     int idx = index;
     if (arg[idx] != '0') {
-        return index; //not a oct
+        /* not an octal */
+        return index;
     }
-    //congrats, we have a oct, how long is it?
-    while (is_oct(arg[idx])) { //just realized, why doesn't this go over the size of arg?
+    /* octal token found */
+    while (is_oct(arg[idx])) {
         idx++;
     }
+    /* checks for edge case where token is decimal, not octal */
     if (arg[idx] == '8' || arg[idx] == '9') {
         return index;
     }
-    else if (arg[idx] == '.' && is_dec(arg[idx+1])) { //need to include e-24 is 5e-4 is a decimal
+    /* checks for edge case where token is float, not octal */
+    else if (arg[idx] == '.' && is_dec(arg[idx+1])) {
         return index;
     }
+    /* case where token is octal, and is ended upon reaching a nonoctal character */
     else {
         printf("octal \"");
         for (int i = index; i < idx; i++) {
             printf("%c", arg[i]);
         }
         printf("\n\"");
-        return idx; //this was all coded assuming 0x is a hex, change if otherwise
+        return idx;
     }
 }
 
+/* checks if the next available token is a decimal, and returns the index the next token starts at.
+Will return the same index inputed if no decimal token is found */
 int scan_dec(const char* arg, int index) {
     int idx = index;
     if (!is_dec(arg[idx])) {
-        return index; //not a decimal or float
+        /* not a decimal or float */
+        return index; 
     }
-    //ok we start with a number
+    /* continues incrementing idx until a nondecimal character is found */
     while (is_dec(arg[idx])) {
         idx++;
     }
-    if (arg[idx] == '.' && is_dec(arg[idx+1])) { //need to include e-24 is 5e-4 is a decimal
+    /* found a float */
+    if (arg[idx] == '.' && is_dec(arg[idx+1])) {
         return index;
     }
-
+    /* found a decimal */
     printf("decimal \"");
     for (int i = index; i < idx; i++) {
         printf("%c", arg[i]);
@@ -271,22 +287,25 @@ int scan_dec(const char* arg, int index) {
     return idx;
 }
 
-int scan_float(const char* arg, int index) { //bug rn with consecutive decimals and no space, ie 324.324.234
+/* checks if the next available token is a float, and returns the index the next token starts at.
+Will return the same index inputed if no float token is found */
+int scan_float(const char* arg, int index) {
     int idx = index;
-    bool has_decpoint = false; //boolean, 0 if decimal point not found yet
+    /* boolean denoting if a decimal point has been observed in the token*/
+    bool has_decpoint = false;
     if (!is_dec(arg[idx])) {
         return index;
     }
-    //ok we have a float
+    /* float found */
     printf("float \"");
     while (is_dec(arg[idx])) {
         printf("%c", arg[idx]);
         idx++;
     }
-
+    /* decimal point found */
     if (arg[idx] == '.') {
         printf(".");
-        idx++; //increment so we're past the decimal point
+        idx++;
         while (is_dec(arg[idx])) {
             printf("%c", arg[idx]);
             idx++;
@@ -445,7 +464,7 @@ int main() {
     word_load_file();
     // op_print(op_main, 0);
 
-    char s[] = " `";
+    char s[] = "0x98"; //test "`"
     scan(s);
 
     return 0;
