@@ -450,6 +450,18 @@ int scan_float(const char* arg, int index) {
 
 
 /*---------------------------------WORD---------------------------------------*/
+
+/* 
+ * Loads an array of reserved words into HashTable ht_table. Tokenizer will lookup 
+ * input words from this hashtable to detect C keywords.
+ * 
+ * Parameters
+ *     None
+ * Precondition
+ *     None
+ * Returns
+ *     None
+ */
 void word_load_file() {
     const char *WORD_DATA[32] = {   
                             "auto", "break", "case", "char", "const", "continue", "default", 
@@ -467,6 +479,20 @@ void word_load_file() {
 
 /*----------------------MAIN ROUTINE-------------------------------------------*/
 
+/* 
+ * Main tokenizer routine, runs through a given string s and recognizes tokens until
+ * a null terminator is reached. Steps through each character in s, and checks if it
+ * matches any valid token type. If it does, the program will print the token type and
+ * characters, and skip to the first invalid character. Otherwise, the program will 
+ * skip the current character.
+ * 
+ * Parameters
+ *     contant char* s - input string to tokenize
+ * Precondition
+ *     s is a valid string with a null terminator.
+ * Returns
+ *     None
+ */
 void scan(const char *s) {
     /* scan num functions */
     int (*f_ptr[])(const char *, int) = {&scan_hex, &scan_oct, &scan_dec, &scan_float};
@@ -603,10 +629,8 @@ void scan(const char *s) {
 int main(int argc, char **argv) {
     op_load_data();
     word_load_file();
-    // // op_print(op_main, 0);
 
     char s[] = "\'\"\'\"";
-
     scan(s);
 
     return 0;
