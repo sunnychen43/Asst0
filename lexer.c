@@ -434,6 +434,10 @@ int scan_float(const char* arg, int index) {
             printf("e-");
             idx += 2; /* increments past the e and - signs */
         }
+        else if (arg[idx+1] == '+' && is_dec(arg[idx+2])) {
+            printf("e-");
+            idx += 2; /* increments past the e and + signs */
+        }
         else {
             printf("\"\n");
             return idx; /* e is not followed by numbers */
@@ -605,7 +609,7 @@ int main(int argc, char **argv) {
     word_load_file();
     // // op_print(op_main, 0);
 
-    char s[] = "\'\"\'\"";
+    char s[] = "3.34e-3.3";
 
     scan(s);
 
