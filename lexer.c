@@ -239,6 +239,16 @@ HashItem *ht_add(const char *s) {
 	return p;
 }
 
+/* 
+ * Frees all entires in HashTable ht_table.
+ * 
+ * Parameters
+ *     None
+ * Precondition
+ *     None
+ * Returns
+ *     None
+ */
 void ht_free() {
 	for (int i=0; i < HASHSIZE; i++) {
 		HashItem *tmp, *p = ht_table[i];
@@ -250,7 +260,7 @@ void ht_free() {
 		}
 	}
 }
-/*----------------------------------------------------------------------------*/
+
 
 /*--------------------------------NUMBER--------------------------------------*/
 
@@ -383,55 +393,61 @@ int scan_dec(const char* arg, int index) {
  *     int index - index of current character in the original string
  * Precondition
  *     index is less than the length of the arg char array
+ *     only called if scan_dec fails, which means there is definitely a decimal point
  * Returns
  *     integer index of the first character next token (returns parameter index if no float is found)
  */
 int scan_float(const char* arg, int index) {
     int idx = index;
-    /* boolean denoting if a decimal point has been observed in the token*/
-    bool has_decpoint = false;
+
     /* if first character is a digit, not a float (account for edge case where token starts with .) */
     if (!is_dec(arg[idx])) {
         return index;
     }
+
     /* float found, all other possibilities have already been checked */
     printf("float \"");
     while (is_dec(arg[idx])) {
         printf("%c", arg[idx]);
         idx++;
     }
-    /* decimal point found */
-    if (arg[idx] == '.') {
-        printf(".");
+
+    /* sanity check, decimal point should always be present */
+    if (arg[idx] != '.') {
+        return -1;
+    }
+
+    printf(".");
+    idx++;
+    while (is_dec(arg[idx])) {
+        printf("%c", arg[idx]);
         idx++;
+    }
+
+    /* accounts for scientific notation case */
+    if (arg[idx] == 'e') {
+        if (is_dec(arg[idx+1])) {
+            printf("e");
+            idx++; /* increments past the e char */
+        }
+        else if (arg[idx+1] == '-' && is_dec(arg[idx+2])) {
+            printf("e-");
+            idx += 2; /* increments past the e and - signs */
+        }
+        else {
+            printf("\"\n");
+            return idx; /* e is not followed by numbers */
+        }
+
         while (is_dec(arg[idx])) {
             printf("%c", arg[idx]);
             idx++;
         }
-        /* accounts for scientific notation case */
-        if (arg[idx] == 'e') {
-            printf("%c", arg[idx]);
-            if (arg[idx+1] == '-') {
-                idx = idx + 2; /* increments past the e and - signs */
-            }
-            else if (is_dec(arg[idx+1])) {
-                idx++; /* increments past the e char */
-            }
-            else {
-                return idx; /* e is not followed by numbers */
-            }
-            while (is_dec(arg[idx])) {
-                printf("%c", arg[idx]);
-                idx++;
-            }
-        }
-        printf("\"\n");
-        return idx; 
     }
-    
-    return -1;
+    printf("\"\n");
+    return idx; 
 }
-/*----------------------------------------------------------------------------*/
+
 
 /*---------------------------------WORD---------------------------------------*/
 void word_load_file() {
@@ -447,7 +463,9 @@ void word_load_file() {
         ht_add(WORD_DATA[i]);
     }
 }
-/*----------------------------------------------------------------------------*/
+
+
+/*----------------------MAIN ROUTINE-------------------------------------------*/
 
 void scan(const char *s) {
     /* scan num functions */
@@ -460,7 +478,6 @@ void scan(const char *s) {
         /* skip comments */
         if (c == '/' && s[i+1] == '*') {
             bool found = false;
-
             int j=i+2; /* first two char are comment, skip them */
             for (; j < strlen(s)-1; j++) {
                 if (s[j] == '*' && s[j+1] == '/') {
@@ -468,8 +485,7 @@ void scan(const char *s) {
                     break;
                 }
             }
-
-            /* skip ahead if found */
+            /* skip ahead if comment block is valid */
             if (found) {
                 i = j+2; /* j is at '*' of comment */
                 continue;
@@ -514,7 +530,6 @@ void scan(const char *s) {
             prev = res;
             curr = res->children;
         }
-
         /* OP found, increase index and print op */
         /* prev will be set if match is found */
         if (prev != NULL) {
@@ -564,6 +579,7 @@ void scan(const char *s) {
             continue;
         }
 
+        /* catch unrecognized char */
         printf("unknown char \"%c\"\n", s[i]);
         i++;
     }
@@ -574,7 +590,7 @@ int main() {
     word_load_file();
     // op_print(op_main, 0);
 
-    char s[] = "%=";
+    char s[] = "0.123e--1ee";
 
     scan(s);
 
