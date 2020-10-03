@@ -492,13 +492,28 @@ void scan(const char *s) {
             }
         }
 
+        if (c == '/' && s[i+1] == '/') {
+            int j=i+2;
+            for (; j < strlen(s); j++) {
+                if (s[j] == '\n') {
+                    break;
+                }
+            }
+            if (j < strlen(s)) {
+                i = j+1;
+                continue;
+            }
+        }
+
         /* catch quotes */
         if (c == '\"' || c == '\'') {
             bool found = false;
 
             int j = i+1; /* skip first quote */
             for (; j < strlen(s); j++) {
-                if (s[j] == c) { /* make sure quotes match */
+                bool is_quote = (s[j] == c);
+                bool has_backslash = (s[j-1] == '\\' && s[j-2] != '\\');
+                if (is_quote && !has_backslash) { /* make sure quotes match */
                     found = true;
                     break;
                 }
@@ -585,12 +600,12 @@ void scan(const char *s) {
     }
 }
 
-int main() {
+int main(int argc, char **argv) {
     op_load_data();
     word_load_file();
-    // op_print(op_main, 0);
+    // // op_print(op_main, 0);
 
-    char s[] = "0.123e--1ee";
+    char s[] = "\'\"\'\"";
 
     scan(s);
 
