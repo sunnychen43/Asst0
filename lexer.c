@@ -434,6 +434,10 @@ int scan_float(const char* arg, int index) {
             printf("e-");
             idx += 2; /* increments past the e and - signs */
         }
+        else if (arg[idx+1] == '+' && is_dec(arg[idx+2])) {
+            printf("e-");
+            idx += 2; /* increments past the e and + signs */
+        }
         else {
             printf("\"\n");
             return idx; /* e is not followed by numbers */
@@ -501,7 +505,7 @@ void scan(const char *s) {
     while (i < strlen(s)) {
         char c = s[i];
 
-        /* skip comments */
+        /* skip multiline comments */
         if (c == '/' && s[i+1] == '*') {
             bool found = false;
             int j=i+2; /* first two char are comment, skip them */
@@ -513,11 +517,11 @@ void scan(const char *s) {
             }
             /* skip ahead if comment block is valid */
             if (found) {
-                i = j+2; /* j is at '*' of comment */
+                i = j+2; /* j is at '*' of comment, so we set i to the character following the comment */
                 continue;
             }
         }
-
+        /* skip single line comments */
         if (c == '/' && s[i+1] == '/') {
             int j=i+2;
             for (; j < strlen(s); j++) {
