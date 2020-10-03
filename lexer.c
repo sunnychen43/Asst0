@@ -7,7 +7,7 @@
 /*-----------------------------OPERATORS-------------------------------------*/
 
 /* 
- * operators are stored as a LL, each node also contains children that
+ * Operators are stored as a LL, each node also contains children that
  * share the same prefix. (ex: '-' will contain '->' and '--' as children) 
  */
 typedef struct OP {
@@ -112,6 +112,7 @@ void op_add(OP **head, const char *op_chr, const char *name) {
  *     const char *name - operator name
  * Precondition
  *     op_chr and name are valid char arrays, not NULL
+ *     op_load_data() has been run
  * Returns
  *     None
  */
@@ -126,6 +127,18 @@ OP *op_search(OP *head, char c) {
     return NULL;
 }
 
+/* 
+ * Loads the operator data from an OP_DATA string array. This method was originally used
+ * to read operator info from a text file, but we modified it to read from a string array. 
+ * This method should be called first to setup op_main.
+ * 
+ * Parameters
+ *     None
+ * Precondition
+ *     None
+ * Returns
+ *     None
+ */
 void op_load_data() {
 
     /* char[] array of all operators and their names */
@@ -139,7 +152,7 @@ void op_load_data() {
             "? conditional true", ": conditional false", "== equality test", "!=  inequality test", 
             "< less than test", "> greater than test", "<= less than or equal test", ">= greater than or equal test", 
             "= assignment", "+= plus equals", "-= minus equals", "*= times equals", "/= divide equals",  
-            "\%= mod equals", ">>= shift right equals", "<<= shift left equals", "&= bitwise AND equals",  
+            "%= mod equals", ">>= shift right equals", "<<= shift left equals", "&= bitwise AND equals",  
             "^= bitwise XOR equals", "|= bitwise OR equals", "& AND/address operator", "- minus/subtract operator", 
             "* multiply/dereference operator", "\" double quote", "\' single quote"
         };
@@ -151,7 +164,7 @@ void op_load_data() {
         op_add(&op_main, op_chr, name);
     }
 }
-/*----------------------------------------------------------------------------*/
+
 
 /*------------------------------HASHTABLE-------------------------------------*/
 
@@ -161,9 +174,11 @@ typedef struct HashItem {
     struct HashItem *next;
 } HashItem;
 
+/* hashtable has 43 buckets each containing a LL */
 static HashItem *ht_table[HASHSIZE];
 
 
+/* hash function for strings */
 int _hash(const char *s) {
     unsigned hashval;
     for (hashval = 0; *s != '\0'; s++) {
@@ -172,6 +187,16 @@ int _hash(const char *s) {
     return hashval % HASHSIZE;
 }
 
+/* 
+ * Searches ht_table to see if s is present.
+ * 
+ * Parameters
+ *     const char *s - string to search for
+ * Precondition
+ *     s is valid string
+ * Returns
+ *     HashItem* pointer to matching item, NULL if match not found
+ */
 HashItem *ht_lookup(const char *s) {
 	HashItem *p = ht_table[_hash(s)];
 	for (; p != NULL; p = p->next) {
@@ -182,21 +207,32 @@ HashItem *ht_lookup(const char *s) {
 	return NULL;
 }
 
-HashItem *ht_add(const char *name) {
+/* 
+ * Inserts string s into ht_table. Allocates memory for HashItem and
+ * places new HashItem at the head of LL.
+ * 
+ * Parameters
+ *     const char *s - string to search for
+ * Precondition
+ *     s is valid string
+ * Returns
+ *     HashItem* pointer to item inserted
+ */
+HashItem *ht_add(const char *s) {
     HashItem *p = malloc(sizeof(HashItem));
     if (p == NULL) {
         printf("malloc ht failed. Aborting...\n");
         exit(EXIT_FAILURE);
     }
 
-	p->val = malloc(strlen(name)+1);
+	p->val = malloc(strlen(s)+1);
     if (p->val == NULL) {
         printf("malloc ht->val failed. Aborting...\n");
         exit(EXIT_FAILURE);
     }
-	strcpy(p->val, name);
+	strcpy(p->val, s);
 
-    int hashval = _hash(name);
+    int hashval = _hash(s);
     p->next = ht_table[hashval];
 	ht_table[hashval] = p;
 
@@ -538,7 +574,8 @@ int main() {
     word_load_file();
     // op_print(op_main, 0);
 
-    char s[] = "123.3e-23";
+    char s[] = "%=";
+
     scan(s);
 
     return 0;
