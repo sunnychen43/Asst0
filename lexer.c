@@ -319,7 +319,7 @@ int scan_oct(const char* arg, int index) {
 int scan_dec(const char* arg, int index) {
     int idx = index;
     if (!is_dec(arg[idx])) {
-        /* not a decimal or float */
+    /* doesn't start with digit, is not a decimal or float */
         return index; 
     }
     /* continues incrementing idx until a nondecimal character is found */
@@ -354,10 +354,11 @@ int scan_float(const char* arg, int index) {
     int idx = index;
     /* boolean denoting if a decimal point has been observed in the token*/
     bool has_decpoint = false;
+    /* if first character is a digit, not a float (account for edge case where token starts with .) */
     if (!is_dec(arg[idx])) {
         return index;
     }
-    /* float found */
+    /* float found, all other possibilities have already been checked */
     printf("float \"");
     while (is_dec(arg[idx])) {
         printf("%c", arg[idx]);
@@ -370,6 +371,23 @@ int scan_float(const char* arg, int index) {
         while (is_dec(arg[idx])) {
             printf("%c", arg[idx]);
             idx++;
+        }
+        /* accounts for scientific notation case */
+        if (arg[idx] == 'e') {
+            printf("%c", arg[idx]);
+            if (arg[idx+1] == '-') {
+                idx = idx + 2; /* increments past the e and - signs */
+            }
+            else if (is_dec(arg[idx+1])) {
+                idx++; /* increments past the e char */
+            }
+            else {
+                return idx; /* e is not followed by numbers */
+            }
+            while (is_dec(arg[idx])) {
+                printf("%c", arg[idx]);
+                idx++;
+            }
         }
         printf("\"\n");
         return idx; 
@@ -520,7 +538,7 @@ int main() {
     word_load_file();
     // op_print(op_main, 0);
 
-    char s[] = "123.12.2.2.31";
+    char s[] = "123.3e-23";
     scan(s);
 
     return 0;
