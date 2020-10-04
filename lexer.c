@@ -658,11 +658,11 @@ int main(int argc, char **argv) {
     op_load_data();
     word_load_file();
 
-    char s[] = "filetest 123";
-    scan(s);
+    //char s[] = "filetest 123";
+    scan(argv[1]);
 
-    ht_free();
     op_free(op_main);
-    
+    ht_free();
+
     return 0;
 }
