@@ -205,13 +205,15 @@ typedef struct HashItem {
 static HashItem *ht_table[HASHSIZE];
 
 
-/* hash function for strings */
+/* djb2 hash function for strings by dan bernstein */
 int _hash(const char *s) {
-    unsigned hashval;
-    for (hashval = 0; *s != '\0'; s++) {
-    	hashval = *s + 31 * hashval;
+    unsigned long hash = 5381;
+    int c;
+
+    while ((c = *s++)) {
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
     }
-    return hashval % HASHSIZE;
+    return hash % HASHSIZE;
 }
 
 /* 
@@ -499,15 +501,15 @@ int scan_float(const char* arg, int index) {
  *     None
  */
 void word_load_file() {
-    const char *WORD_DATA[32] = {   
+    const char *WORD_DATA[31] = {   
                             "auto", "break", "case", "char", "const", "continue", "default", 
                             "do", "double", "else", "enum", "extern", "float", "for", 
                             "goto", "if", "int", "long", "register", "return", "short", 
-                            "signed", "sizeof", "static", "struct", "switch", "typedef", "union", 
+                            "signed", "static", "struct", "switch", "typedef", "union", 
                             "unsigned", "void", "volatile", "while" 
                         };
 
-    for (int i=0; i < 32; i++) {
+    for (int i=0; i < 31; i++) {
         ht_add(WORD_DATA[i]);
     }
 }
@@ -649,7 +651,11 @@ void scan(const char *str) {
             strncpy(word, str+i, j-i);
             word[j-i] = '\0';
 
-            if (ht_lookup(word) != NULL) {  /* keyword found */
+            /* seperate check for sizeof, which is operator */
+            if (strcmp(word, "sizeof") == 0) {
+                printf("sizeof \"sizeof\"\n");
+            }
+            else if (ht_lookup(word) != NULL) {  /* keyword found */
                 printf("keyword \"%s\"\n", word);
             }
             else {
@@ -672,7 +678,8 @@ int main(int argc, char **argv) {
     word_load_file();
 
     /* classify and print tokens */
-    scan(argv[1]);
+    char s[] = "+=sizeof";
+    scan(s);
 
     /* free memory */
     op_free(op_main);
