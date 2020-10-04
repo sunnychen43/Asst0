@@ -1,0 +1,62 @@
+HEX
+0x
+0X
+0	x292
+0 x293
+0xA34f3s4
+g*30XFa8.fg8
+OCTAL
+0
+072
+08
+01238
+02.3
+02.9
+0.324
+0.
+07.
+0.0
+079.9
+DECIMAL
+01
+09
+079
+1353e2
+5.3
+5.3e2
+14.
+FLOAT
+.6
+0.8
+12.214.52
+1.0e32
+1.0e+
+1.0e-
+1.0e+0x
+1.0e-2.3
+1.0e-3
+EXTRA CREDIT
+/* sunshine
+// sun
+///
+"/*moon*/shine///."
+" "ok' a 'y""
+MISC
+sunshine537 9sun s8n
+word “sunshine537” decimal “9” word “sun” word “s8n”
+sun.shine5.3 7.ok 5.37e-016
+word “sun” structure member “.” word “shine5” decimal “.3” decimal “7” structure member “.” word “ok” decimal “5.37e-016”
+.34ae-39e0453
+decimal “.34” word “ae” minus “-” decimal “39” word “e0453”
+230492,0
+decimal “230492” comma “,” decimal “0”
+077.44[00.32]
+078
+decimal “078”
+45a.435.
+decimal “45” word “a” float “.435” structure member “.”
+03420x3423fd
+octal 03420 word x3423fd
+032.49
+octal 032 decimal .49 or decimal 032.49???
+3123.1231.312313.132
