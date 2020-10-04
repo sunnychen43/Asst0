@@ -531,13 +531,13 @@ void word_load_file() {
  * Returns
  *     None
  */
-void scan(const char *s) {
+void scan(const char *str) {
     /* scan num functions */
     int (*f_ptr[])(const char *, int) = {&scan_hex, &scan_oct, &scan_dec, &scan_float};
 
     int i=0;
-    while (i < strlen(s)) {
-        char c = s[i];
+    while (i < strlen(str)) {
+        char c = str[i];
 
         /* skip terminators */
         if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
@@ -545,11 +545,11 @@ void scan(const char *s) {
         }
 
         /* skip multiline comments */
-        if (c == '/' && s[i+1] == '*') {
+        if (c == '/' && str[i+1] == '*') {
             bool found = false;
             int j=i+2; /* first two char are comment, skip them */
-            for (; j < strlen(s)-1; j++) {
-                if (s[j] == '*' && s[j+1] == '/') {
+            for (; j < strlen(str)-1; j++) {
+                if (str[j] == '*' && str[j+1] == '/') {
                     found = true;
                     break;
                 }
@@ -561,14 +561,14 @@ void scan(const char *s) {
             }
         }
         /* skip single line comments */
-        if (c == '/' && s[i+1] == '/') {
+        if (c == '/' && str[i+1] == '/') {
             int j=i+2;
-            for (; j < strlen(s); j++) {
-                if (s[j] == '\n') {
+            for (; j < strlen(str); j++) {
+                if (str[j] == '\n') {
                     break;
                 }
             }
-            if (j < strlen(s)) {
+            if (j < strlen(str)) { /* handles error of incrementing outside the length of the input string */
                 i = j+1;
                 continue;
             }
@@ -579,9 +579,9 @@ void scan(const char *s) {
             bool found = false;
 
             int j = i+1; /* skip first quote */
-            for (; j < strlen(s); j++) {
-                bool is_quote = (s[j] == c);
-                bool has_backslash = (s[j-1] == '\\' && s[j-2] != '\\');
+            for (; j < strlen(str); j++) {
+                bool is_quote = (str[j] == c);
+                bool has_backslash = (str[j-1] == '\\' && str[j-2] != '\\');
                 if (is_quote && !has_backslash) { /* make sure quotes match */
                     found = true;
                     break;
@@ -589,7 +589,7 @@ void scan(const char *s) {
             }
 
             if (found) {
-                printf("string \"%.*s\"\n", j-i-1, s+i+1); /* j-i-1 is string len, s+i+1 is starting pos */
+                printf("string \"%.*s\"\n", j-i-1, str+i+1); /* j-i-1 is string len, s+i+1 is starting pos */
                 i = j+1;
                 continue;
             }
@@ -599,10 +599,10 @@ void scan(const char *s) {
         OP *prev = NULL;
         OP *curr = op_main;
         int j = i;
-        for (; j < strlen(s); j++) {
+        for (; j < strlen(str); j++) {
             if (curr == NULL) {break;} /* op has been found and cant be longer */
 
-            OP *res = op_search(curr, s[j]);
+            OP *res = op_search(curr, str[j]);
 
             if (res == NULL) {break;} /* match not found */
 
@@ -612,7 +612,7 @@ void scan(const char *s) {
         /* OP found, increase index and print op */
         /* prev will be set if match is found */
         if (prev != NULL) {
-            printf("%s \"%.*s\"\n", prev->name, j-i, s+i); /* '.*' specifies length of string to print */
+            printf("%s \"%.*s\"\n", prev->name, j-i, str+i); /* '.*' specifies length of string to print */
             i = j;
             continue;
         }
@@ -620,7 +620,7 @@ void scan(const char *s) {
         /* catch number */
         if (isdigit(c)) {
             for (int j=0; j < 4; j++) {
-                int peek_ind = (f_ptr[j])(s, i);
+                int peek_ind = (f_ptr[j])(str, i);
                 if (peek_ind > i) {
                     i = peek_ind;
                     break;
@@ -629,11 +629,12 @@ void scan(const char *s) {
             continue;
         }
 
+
         /* Word */
         if (isalpha(c)) {
             int j=i+1;
-            while (j < strlen(s)) {
-                if (!isalnum(s[j])) {break;}
+            while (j < strlen(str)) {
+                if (!isalnum(str[j])) {break;}
                 j++;
             }
 
@@ -644,7 +645,7 @@ void scan(const char *s) {
                 exit(EXIT_FAILURE);
             }
             
-            strncpy(word, s+i, j-i);
+            strncpy(word, str+i, j-i);
             word[j-i] = '\0';
 
             if (ht_lookup(word) != NULL) {  /* keyword found */
@@ -659,7 +660,7 @@ void scan(const char *s) {
         }
 
         /* catch unrecognized char */
-        printf("unknown char \"%c\"\n", s[i]);
+        printf("unknown char \"%c\"\n", str[i]);
         i++;
     }
 }
