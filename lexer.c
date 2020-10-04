@@ -106,23 +106,6 @@ void op_add(OP **head, const char *op_chr, const char *name) {
     return;
 }
 
-void op_free(OP *head) {
-    OP *curr = head;
-    OP *next;
-    while (curr != NULL) {
-        next = curr->next;
-        op_free(curr->children);
-
-        if (curr->name != NULL) {
-            free(curr->name);
-        }
-        free(curr);
-        curr = next;
-    }
-
-    return;
-}
-
 /* 
  * Searches *head and anything along the linked list (*next) 
  * for a match with arg char c.
@@ -144,6 +127,33 @@ OP *op_search(OP *head, char c) {
         curr = curr->next;
     }
     return NULL;
+}
+
+/* 
+ * Frees the LL at head and all its children recursively. 
+ * 
+ * Parameters
+ *     OP *head - pointer to LL to be freed
+ * Preconditions
+ *     None
+ * Returns
+ *     None
+ */
+void op_free(OP *head) {
+    OP *curr = head;
+    OP *next;
+    while (curr != NULL) {
+        next = curr->next;
+        op_free(curr->children);
+
+        if (curr->name != NULL) {
+            free(curr->name);
+        }
+        free(curr);
+        curr = next;
+    }
+
+    return;
 }
 
 /* 
