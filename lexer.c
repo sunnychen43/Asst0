@@ -517,6 +517,7 @@ void word_load_file() {
  *     s is a valid string with a null terminator.
  * Error Handling
  *     Catches unrecognized characters at the end of loop
+ *     Exits on malloc() failure
  * Returns
  *     None
  */
@@ -642,7 +643,7 @@ void scan(const char *s) {
             else {
                 printf("word \"%s\"\n", word);
             }
-
+            free(word);
             i = j;
             continue;
         }
