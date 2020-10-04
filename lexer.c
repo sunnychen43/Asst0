@@ -25,7 +25,7 @@ static OP *op_main;
  * 
  * Parameters
  *     None
- * Precondition
+ * Preconditions
  *     None
  * Returns
  *     OP* pointer to allocated struct
@@ -49,10 +49,11 @@ OP *op_init() {
  * inserted.
  * 
  * Parameters
- *     OP **head - double pointer to head of LL
+ *     OP **head - double pointer to head of LL, so we can 
+ *     assign *head to a new struct if it is NULL
  *     const char *op_chr - operator chars
  *     const char *name - operator name
- * Precondition
+ * Preconditions
  *     op_chr and name are valid char arrays, not NULL
  * Returns
  *     None
@@ -102,17 +103,14 @@ void op_add(OP **head, const char *op_chr, const char *name) {
 }
 
 /* 
- * Creates a op node and inserts into head. Each node can only contain 1 char,
- * so will call itself recursivly untill all characters in op_chr have been 
- * inserted.
+ * Searches *head and anything along the linked list (*next) 
+ * for a match with arg char c.
  * 
  * Parameters
- *     OP **head - double pointer to head of LL
- *     const char *op_chr - operator chars
- *     const char *name - operator name
- * Precondition
- *     op_chr and name are valid char arrays, not NULL
- *     op_load_data() has been run
+ *     OP *head - pointer to head of LL
+ *     char c - character to search for
+ * Preconditions
+ *     None
  * Returns
  *     None
  */
@@ -134,7 +132,7 @@ OP *op_search(OP *head, char c) {
  * 
  * Parameters
  *     None
- * Precondition
+ * Preconditions
  *     None
  * Returns
  *     None
@@ -192,7 +190,7 @@ int _hash(const char *s) {
  * 
  * Parameters
  *     const char *s - string to search for
- * Precondition
+ * Preconditions
  *     s is valid string
  * Returns
  *     HashItem* pointer to matching item, NULL if match not found
@@ -213,7 +211,7 @@ HashItem *ht_lookup(const char *s) {
  * 
  * Parameters
  *     const char *s - string to search for
- * Precondition
+ * Preconditions
  *     s is valid string
  * Returns
  *     HashItem* pointer to item inserted
@@ -244,7 +242,7 @@ HashItem *ht_add(const char *s) {
  * 
  * Parameters
  *     None
- * Precondition
+ * Preconditions
  *     None
  * Returns
  *     None
@@ -285,7 +283,7 @@ bool is_oct(char c) {
  * Parameters
  *     contant char* c - input string
  *     int index - index of current character in the original string
- * Precondition
+ * Preconditions
  *     index is less than the length of the arg char array
  * Returns
  *     integer index of the first character next token (returns parameter index if no hexadecimal is found)
@@ -317,7 +315,7 @@ int scan_hex(const char* arg, int index) {
  * Parameters
  *     contant char* c - input string
  *     int index - index of current character in the original string
- * Precondition
+ * Preconditions
  *     index is less than the length of the arg char array
  * Returns
  *     integer index of the first character next token (returns parameter index if no octal is found)
@@ -357,7 +355,7 @@ int scan_oct(const char* arg, int index) {
  * Parameters
  *     contant char* c - input string
  *     int index - index of current character in the original string
- * Precondition
+ * Preconditions
  *     index is less than the length of the arg char array
  * Returns
  *     integer index of the first character next token (returns parameter index if no decimal is found)
@@ -391,7 +389,7 @@ int scan_dec(const char* arg, int index) {
  * Parameters
  *     contant char* c - input string
  *     int index - index of current character in the original string
- * Precondition
+ * Preconditions
  *     index is less than the length of the arg char array
  *     only called if scan_dec fails, which means there is definitely a decimal point
  * Returns
@@ -461,7 +459,7 @@ int scan_float(const char* arg, int index) {
  * 
  * Parameters
  *     None
- * Precondition
+ * Preconditions
  *     None
  * Returns
  *     None
@@ -492,7 +490,7 @@ void word_load_file() {
  * 
  * Parameters
  *     contant char* s - input string to tokenize
- * Precondition
+ * Preconditions
  *     s is a valid string with a null terminator.
  * Returns
  *     None
@@ -504,6 +502,11 @@ void scan(const char *s) {
     int i=0;
     while (i < strlen(s)) {
         char c = s[i];
+
+        /* skip terminators */
+        if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+            i++; continue;
+        }
 
         /* skip multiline comments */
         if (c == '/' && s[i+1] == '*') {
@@ -554,11 +557,6 @@ void scan(const char *s) {
                 i = j+1;
                 continue;
             }
-        }
-
-        /* skip terminators */
-        if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
-            i++; continue;
         }
 
         /* catch operators */
@@ -634,7 +632,7 @@ int main(int argc, char **argv) {
     op_load_data();
     word_load_file();
 
-    char s[] = "\'\"\'\"";
+    char s[] = "filetest 123";
     scan(s);
 
     return 0;
