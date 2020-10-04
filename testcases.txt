@@ -1,5 +1,4 @@
 Operators:
-
 -<<>=<==>,,<.&%=#
     minus/subtract operator: "-"
     shift left: "<<"
@@ -46,7 +45,6 @@ Operators:
 
 
 Hexadecimal:
-
 0x 0X 0xx0oxo0OXx 0	x0	
     hex: "0x"
     hex: "0X"
@@ -69,7 +67,6 @@ x2920 x2930xA34f3
 
 
 Octal:
-
 0 072 08 0111111 01239 
     octal: “0”
     octal: “072”
@@ -115,7 +112,6 @@ Decimal
 
 
 Float
-
 .6 0.8 12.214.52 
     structure member: "."
     decimal: "6"
@@ -136,7 +132,6 @@ Float
 
 
 Word/Keywords:
-
 hello test123 int whilewhile unionif for this()while
     word: "hello"
     word: "test123"
@@ -162,7 +157,6 @@ apple++-=const
 
 
 Comments and Quotes
-
 /* sunshine // sun ///* "/*moon*/ shine /." " "ok' a ' "///y"
     word: "shine"
     division: "/"
@@ -176,8 +170,7 @@ Comments and Quotes
     string "This is not a comment"
 
 
-Misc.
-
+Misc:
 sunshine537 9sun += s8n @@~
     word "sunshine537"
     decimal "9"
