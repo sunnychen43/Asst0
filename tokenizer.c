@@ -542,8 +542,8 @@ void scan(const char *str) {
     while (i < strlen(str)) {
         char c = str[i];
 
-        /* skip terminators */
-        if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+        /* skip whitespace */
+        if (c == ' ' || c == '\n' || c == '\r' || c == '\t' || c == '\f' || c == '\v') {
             i++; continue;
         }
 
