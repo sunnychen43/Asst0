@@ -7,7 +7,7 @@
 /*-----------------------------OPERATORS-------------------------------------*/
 
 /* 
- * Operators are stored as a LL, each node also contains children that
+ * Operators are stored in a trie as an LL, each node also contains children that
  * share the same prefix. (ex: '-' will contain '->' and '--' as children) 
  */
 typedef struct OP {
@@ -15,7 +15,6 @@ typedef struct OP {
     struct OP *children;
     struct OP *next;
 } OP;
-
 /* global head of LL */
 static OP *op_main;
 
@@ -106,23 +105,6 @@ void op_add(OP **head, const char *op_chr, const char *name) {
     return;
 }
 
-void op_free(OP *head) {
-    OP *curr = head;
-    OP *next;
-    while (curr != NULL) {
-        next = curr->next;
-        op_free(curr->children);
-
-        if (curr->name != NULL) {
-            free(curr->name);
-        }
-        free(curr);
-        curr = next;
-    }
-
-    return;
-}
-
 /* 
  * Searches *head and anything along the linked list (*next) 
  * for a match with arg char c.
@@ -147,6 +129,33 @@ OP *op_search(OP *head, char c) {
 }
 
 /* 
+ * Frees the LL at head and all its children recursively. 
+ * 
+ * Parameters
+ *     OP *head - pointer to LL to be freed
+ * Preconditions
+ *     None
+ * Returns
+ *     None
+ */
+void op_free(OP *head) {
+    OP *curr = head;
+    OP *next;
+    while (curr != NULL) {
+        next = curr->next;
+        op_free(curr->children);
+
+        if (curr->name != NULL) {
+            free(curr->name);
+        }
+        free(curr);
+        curr = next;
+    }
+
+    return;
+}
+
+/* 
  * Loads the operator data from an OP_DATA string array. This method was originally used
  * to read operator info from a text file, but we modified it to read from a string array. 
  * This method should be called first to setup op_main.
@@ -159,7 +168,6 @@ OP *op_search(OP *head, char c) {
  *     None
  */
 void op_load_data() {
-
     /* char[] array of all operators and their names */
     /* the operator and its name are seperated by a space */
     const char *OP_DATA[43] = 
@@ -197,13 +205,15 @@ typedef struct HashItem {
 static HashItem *ht_table[HASHSIZE];
 
 
-/* hash function for strings */
+/* djb2 hash function for strings by dan bernstein */
 int _hash(const char *s) {
-    unsigned hashval;
-    for (hashval = 0; *s != '\0'; s++) {
-    	hashval = *s + 31 * hashval;
+    unsigned long hash = 5381;
+    int c;
+
+    while ((c = *s++)) {
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
     }
-    return hashval % HASHSIZE;
+    return hash % HASHSIZE;
 }
 
 /* 
@@ -313,7 +323,6 @@ bool is_oct(char c) {
  */
 int scan_hex(const char* arg, int index) {
     int idx = index;
-
     if (arg[idx] != '0' || (arg[idx+1] != 'x' && arg[idx+1] != 'X')) {
         /* not a hexadecimal */
         return index;
@@ -323,6 +332,7 @@ int scan_hex(const char* arg, int index) {
     printf("hex: \"");
     printf("%c%c", arg[idx], arg[idx+1]);
     idx += 2;
+
     /* print all acceptable hexadecimal values, note there could be no values */
     while (is_hex(arg[idx])) {
         printf("%c", arg[idx]);
@@ -349,6 +359,7 @@ int scan_oct(const char* arg, int index) {
         /* not an octal */
         return index;
     }
+
     /* octal token found */
     while (is_oct(arg[idx])) {
         idx++;
@@ -368,7 +379,7 @@ int scan_oct(const char* arg, int index) {
             printf("%c", arg[i]);
         }
         printf("\"\n");
-        return idx; //this was all coded assuming 0x is a hex, change if otherwise
+        return idx; /* this was all coded assuming 0x is a hex, change if otherwise */
     }
 }
 
@@ -389,6 +400,7 @@ int scan_dec(const char* arg, int index) {
     /* doesn't start with digit, is not a decimal or float */
         return index; 
     }
+
     /* continues incrementing idx until a nondecimal character is found */
     while (is_dec(arg[idx])) {
         idx++;
@@ -397,6 +409,7 @@ int scan_dec(const char* arg, int index) {
     if (arg[idx] == '.' && is_dec(arg[idx+1])) {
         return index;
     }
+
     /* found a decimal */
     printf("decimal: \"");
     for (int i = index; i < idx; i++) {
@@ -488,15 +501,15 @@ int scan_float(const char* arg, int index) {
  *     None
  */
 void word_load_file() {
-    const char *WORD_DATA[32] = {   
+    const char *WORD_DATA[31] = {   
                             "auto", "break", "case", "char", "const", "continue", "default", 
                             "do", "double", "else", "enum", "extern", "float", "for", 
                             "goto", "if", "int", "long", "register", "return", "short", 
-                            "signed", "sizeof", "static", "struct", "switch", "typedef", "union", 
+                            "signed", "static", "struct", "switch", "typedef", "union", 
                             "unsigned", "void", "volatile", "while" 
                         };
 
-    for (int i=0; i < 32; i++) {
+    for (int i=0; i < 31; i++) {
         ht_add(WORD_DATA[i]);
     }
 }
@@ -553,15 +566,14 @@ void scan(const char *str) {
         /* skip single line comments */
         if (c == '/' && str[i+1] == '/') {
             int j=i+2;
+            /* everything until newline is part of the comment */
             for (; j < strlen(str); j++) {
                 if (str[j] == '\n') {
                     break;
                 }
             }
-            if (j < strlen(str)) { /* handles error of incrementing outside the length of the input string */
-                i = j+1;
-                continue;
-            }
+            i = j+1;
+            continue;
         }
 
         /* catch quotes */
@@ -618,8 +630,7 @@ void scan(const char *str) {
             }
             continue;
         }
-
-
+      
         /* Word */
         if (isalpha(c)) {
             int j=i+1;
@@ -638,7 +649,11 @@ void scan(const char *str) {
             strncpy(word, str+i, j-i);
             word[j-i] = '\0';
 
-            if (ht_lookup(word) != NULL) {  /* keyword found */
+            /* seperate check for sizeof, which is operator */
+            if (strcmp(word, "sizeof") == 0) {
+                printf("sizeof: \"sizeof\"\n");
+            }
+            else if (ht_lookup(word) != NULL) {  /* keyword found */
                 printf("keyword: \"%s\"\n", word);
             }
             else {
@@ -656,12 +671,14 @@ void scan(const char *str) {
 }
 
 int main(int argc, char **argv) {
+    /* build op trie and word hashtable */
     op_load_data();
     word_load_file();
 
-    //char s[] = "///\"not a comment\" ";
-    scan(argv);
+    /* classify and print tokens */
+    scan(argv[1]);
 
+    /* free memory */
     op_free(op_main);
     ht_free();
 
