@@ -676,7 +676,8 @@ int main(int argc, char **argv) {
     word_load_file();
 
     /* classify and print tokens */
-    scan(argv[1]);
+    char s[] = "/* sunshine // sun ///* \"/*moon*/ shine /.\" \" \"ok' a ' \"///y\"";
+    scan(s);
 
     /* free memory */
     op_free(op_main);

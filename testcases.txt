@@ -1,62 +1,227 @@
-HEX
-0x
-0X
-0	x292
-0 x293
-0xA34f3s4
-g*30XFa8.fg8
-OCTAL
-0
-072
-08
-01238
-02.3
-02.9
-0.324
-0.
-07.
-0.0
-079.9
-DECIMAL
-01
-09
-079
-1353e2
-5.3
-5.3e2
-14.
-FLOAT
-.6
-0.8
-12.214.52
-1.0e32
-1.0e+
-1.0e-
-1.0e+0x
-1.0e-2.3
-1.0e-3
-EXTRA CREDIT
-/* sunshine
-// sun
-///
-"/*moon*/shine///."
-" "ok' a 'y""
-MISC
-sunshine537 9sun s8n
-word “sunshine537” decimal “9” word “sun” word “s8n”
+Operators:
+
+-<<>=<==>,,<.&%=#
+    minus/subtract operator: "-"
+    shift left: "<<"
+    greater than or equal test: ">="
+    less than or equal test: "<="
+    assignment: "="
+    greater than test: ">"
+    comma: ","
+    comma: ","
+    less than test: "<"
+    structure member: "."
+    AND/address operator: "&"
+    mod equals: "%="
+    unknown char: "#"
+
++====+-=+sizeof++=+=
+    plus equals: "+="
+    equality test: "=="
+    assignment: "="
+    addition: "+"
+    minus equals: "-="
+    addition: "+"
+    sizeof: "sizeof"
+    increment: "++"
+    assignment: "="
+    plus equals: "+="
+
+|| * % == && |= & -- < > -> - << -- -
+    logical OR: "||"
+    multiply/dereference operator: "*"
+    (null): "%"
+    equality test: "=="
+    logical AND: "&&"
+    bitwise OR equals: "|="
+    AND/address operator: "&"
+    decrement: "--"
+    less than test: "<"
+    greater than test: ">"
+    structure pointer: "->"
+    minus/subtract operator: "-"
+    shift left: "<<"
+    decrement: "--"
+    minus/subtract operator: "-"
+
+
+Hexadecimal:
+
+0x 0X 0xx0oxo0OXx 0	x0	
+    hex: "0x"
+    hex: "0X"
+    hex: "0x"
+    word: "x0oxo0OXx"
+    octal: "0"
+    word: "x0"
+
+0x123 0xaaa 0XAAA 0xa1d2f3 0xABCDEFG
+    hex: "0x123"
+    hex: "0xaaa"
+    hex: "0XAAA"
+    hex: "0xa1d2f3"
+    hex: "0xABCDEF"
+    word: "G"
+
+x2920 x2930xA34f3
+    word: "x2920"
+    word: "x2930xA34f3"
+
+
+Octal:
+
+0 072 08 0111111 01239 
+    octal: “0”
+    octal: “072”
+    decimal: “08”
+    octal: “0111111”
+    decimal: “01239”
+
+02.3 0.324 0. 07.0.0 079.9
+    float: "02.3"
+    float: "0.324"
+    octal: "0"
+    structure member: "."
+    float: "07.0"
+    structure member: "."
+    octal: "0"
+    float: "079.9"
+
+
+Decimal
+01 09 079 1353e2 e5.35.3e2		14.
+    octal: "01"
+    decimal: "09"
+    decimal: "079"
+    decimal: "1353"
+    word: "e2"
+    word: "e5"
+    structure member: "."
+    float: "35.3e2"
+    decimal: "14"
+    structure member: "."
+
+090x e-0.33 0292.e3 023.
+    decimal: "090"
+    word: "x"
+    word: "e"
+    minus/subtract operator: "-"
+    float: "0.33"
+    decimal: "0292"
+    structure member: "."
+    word: "e3"
+    octal: "023"
+    structure member: "."
+
+
+Float
+
+.6 0.8 12.214.52 
+    structure member: "."
+    decimal: "6"
+    float: "0.8"
+    float: "12.214"
+    structure member: "."
+    decimal: "52"
+
+1.0e32 1.0e+ 1.0e-2.3 1.0e-3
+    float: "1.0e32"
+    float: "1.0"
+    word: "e"
+    addition: "+"
+    float: "1.0e-2"
+    structure member: "."
+    decimal: "3"
+    float: "1.0e-3"
+
+
+Word/Keywords:
+
+hello test123 int whilewhile unionif for this()while
+    word: "hello"
+    word: "test123"
+    keyword: "int"
+    word: "whilewhile"
+    word: "unionif"
+    keyword: "for"
+    word: "this"
+    left parenthesis: "("
+    right parenthesis: ")"
+    keyword: "while"
+
+vol volatile atile
+    word: "vol"
+    keyword: "volatile"
+    word: "atile"
+
+apple++-=const
+    word: "apple"
+    increment: "++"
+    minus equals: "-="
+    keyword: "const"
+
+
+Comments and Quotes
+
+/* sunshine // sun ///* "/*moon*/ shine /." " "ok' a ' "///y"
+    word: "shine"
+    division: "/"
+    structure member: "."
+    string: " "
+    string: "ok' a ' "
+
+/* this is a comment */
+// this is a comment
+“This is not a comment”
+    string "This is not a comment"
+
+
+Misc.
+
+sunshine537 9sun += s8n @@~
+    word "sunshine537"
+    decimal "9"
+    word "sun"
+    plus equals "+="
+    word "s8n"
+    unknown char "@"
+    unknown char "@"
+    1s complement "~"
+
 sun.shine5.3 7.ok 5.37e-016
-word “sun” structure member “.” word “shine5” decimal “.3” decimal “7” structure member “.” word “ok” decimal “5.37e-016”
-.34ae-39e0453
-decimal “.34” word “ae” minus “-” decimal “39” word “e0453”
-230492,0
-decimal “230492” comma “,” decimal “0”
-077.44[00.32]
-078
-decimal “078”
-45a.435.
-decimal “45” word “a” float “.435” structure member “.”
-03420x3423fd
-octal 03420 word x3423fd
-032.49
-octal 032 decimal .49 or decimal 032.49???
-3123.1231.312313.132
+    word: “sun” 
+    structure member: “.” 
+    word: “shine5” 
+    structure member: “.” 
+    decimal: “3” 
+    decimal: “7”
+    structure member: “.” 
+    word: “ok” 
+    float: “5.37e-016”
+
+#include <stdio.h>
+int main() {
+    printf("hello world\n");
+    return 0;
+}
+    unknown char "#"
+    word "include"
+    less than test "<"
+    word "stdio"
+    structure member "."
+    word "h"
+    greater than test ">"
+    keyword "int"
+    word "main"
+    left parenthesis "("
+    right parenthesis ")"
+    unknown char "{"
+    word "printf"
+    left parenthesis "("
+    string "hello world\n"
+    right parenthesis ")"
+    unknown char ";"
+    keyword "return"
+    octal "0"
+    unknown char ";"
+    unknown char "}"
