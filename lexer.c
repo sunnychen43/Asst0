@@ -566,15 +566,14 @@ void scan(const char *str) {
         /* skip single line comments */
         if (c == '/' && str[i+1] == '/') {
             int j=i+2;
+            /* everything until newline is part of the comment */
             for (; j < strlen(str); j++) {
                 if (str[j] == '\n') {
                     break;
                 }
             }
-            if (j < strlen(str)) { /* handles error of incrementing outside the length of the input string */
-                i = j+1;
-                continue;
-            }
+            i = j+1;
+            continue;
         }
 
         /* catch quotes */
@@ -678,8 +677,8 @@ int main(int argc, char **argv) {
     word_load_file();
 
     /* classify and print tokens */
-    char s[] = "+=sizeof";
-    scan(s);
+    char s[] = "//asdf\n/asdf";
+    scan(argv[1]);
 
     /* free memory */
     op_free(op_main);
