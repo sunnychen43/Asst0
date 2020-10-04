@@ -7,7 +7,7 @@
 /*-----------------------------OPERATORS-------------------------------------*/
 
 /* 
- * Operators are stored as a LL, each node also contains children that
+ * Operators are stored in a trie as an LL, each node also contains children that
  * share the same prefix. (ex: '-' will contain '->' and '--' as children) 
  */
 typedef struct OP {
@@ -15,7 +15,6 @@ typedef struct OP {
     struct OP *children;
     struct OP *next;
 } OP;
-
 /* global head of LL */
 static OP *op_main;
 
@@ -169,7 +168,6 @@ void op_free(OP *head) {
  *     None
  */
 void op_load_data() {
-
     /* char[] array of all operators and their names */
     /* the operator and its name are seperated by a space */
     const char *OP_DATA[43] = 
@@ -323,7 +321,6 @@ bool is_oct(char c) {
  */
 int scan_hex(const char* arg, int index) {
     int idx = index;
-
     if (arg[idx] != '0' || (arg[idx+1] != 'x' && arg[idx+1] != 'X')) {
         /* not a hexadecimal */
         return index;
@@ -333,6 +330,7 @@ int scan_hex(const char* arg, int index) {
     printf("hex \"");
     printf("%c%c", arg[idx], arg[idx+1]);
     idx += 2;
+
     /* print all acceptable hexadecimal values, note there could be no values */
     while (is_hex(arg[idx])) {
         printf("%c", arg[idx]);
@@ -359,6 +357,7 @@ int scan_oct(const char* arg, int index) {
         /* not an octal */
         return index;
     }
+
     /* octal token found */
     while (is_oct(arg[idx])) {
         idx++;
@@ -378,7 +377,7 @@ int scan_oct(const char* arg, int index) {
             printf("%c", arg[i]);
         }
         printf("\"\n");
-        return idx; //this was all coded assuming 0x is a hex, change if otherwise
+        return idx; /* this was all coded assuming 0x is a hex, change if otherwise */
     }
 }
 
@@ -399,6 +398,7 @@ int scan_dec(const char* arg, int index) {
     /* doesn't start with digit, is not a decimal or float */
         return index; 
     }
+
     /* continues incrementing idx until a nondecimal character is found */
     while (is_dec(arg[idx])) {
         idx++;
@@ -407,6 +407,7 @@ int scan_dec(const char* arg, int index) {
     if (arg[idx] == '.' && is_dec(arg[idx+1])) {
         return index;
     }
+
     /* found a decimal */
     printf("decimal \"");
     for (int i = index; i < idx; i++) {
@@ -666,12 +667,14 @@ void scan(const char *str) {
 }
 
 int main(int argc, char **argv) {
+    /* build op trie and word hashtable */
     op_load_data();
     word_load_file();
 
-    //char s[] = "filetest 123";
+    /* classify and print tokens */
     scan(argv[1]);
 
+    /* free memory */
     op_free(op_main);
     ht_free();
 
