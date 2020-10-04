@@ -27,6 +27,8 @@ static OP *op_main;
  *     None
  * Preconditions
  *     None
+ * Error Handling
+ *     Exits on malloc() failure
  * Returns
  *     OP* pointer to allocated struct
  */
@@ -44,7 +46,7 @@ OP *op_init() {
 }
 
 /* 
- * Creates a op node and inserts into head. Each node can only contain 1 char,
+ * Creates a op node and inserts into trie. Each node can only contain 1 char,
  * so will call itself recursivly untill all characters in op_chr have been 
  * inserted.
  * 
@@ -55,6 +57,8 @@ OP *op_init() {
  *     const char *name - operator name
  * Preconditions
  *     op_chr and name are valid char arrays, not NULL
+ * Error Handling
+ *     Exits on malloc() failure
  * Returns
  *     None
  */
@@ -97,6 +101,23 @@ void op_add(OP **head, const char *op_chr, const char *name) {
     }
     else {
         op_add(&(curr->children), op_chr+1, name);
+    }
+
+    return;
+}
+
+void op_free(OP *head) {
+    OP *curr = head;
+    OP *next;
+    while (curr != NULL) {
+        next = curr->next;
+        op_free(curr->children);
+
+        if (curr->name != NULL) {
+            free(curr->name);
+        }
+        free(curr);
+        curr = next;
     }
 
     return;
@@ -213,6 +234,8 @@ HashItem *ht_lookup(const char *s) {
  *     const char *s - string to search for
  * Preconditions
  *     s is valid string
+ * Error Handling
+ *     Exits on malloc() failure
  * Returns
  *     HashItem* pointer to item inserted
  */
@@ -492,6 +515,8 @@ void word_load_file() {
  *     contant char* s - input string to tokenize
  * Preconditions
  *     s is a valid string with a null terminator.
+ * Error Handling
+ *     Catches unrecognized characters at the end of loop
  * Returns
  *     None
  */
@@ -635,5 +660,8 @@ int main(int argc, char **argv) {
     char s[] = "filetest 123";
     scan(s);
 
+    ht_free();
+    op_free(op_main);
+    
     return 0;
 }
