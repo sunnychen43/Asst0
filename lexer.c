@@ -217,10 +217,10 @@ int _hash(const char *s) {
  *     HashItem* pointer to matching item, NULL if match not found
  */
 HashItem *ht_lookup(const char *s) {
-	HashItem *p = ht_table[_hash(s)];
-	for (; p != NULL; p = p->next) {
-		if (strcmp(s, p->val) == 0) {
-			return p;
+	HashItem *ptr = ht_table[_hash(s)];
+	for (; ptr != NULL; ptr = ptr->next) {
+		if (strcmp(s, ptr->val) == 0) {
+			return ptr;
 		}
 	}
 	return NULL;
@@ -320,7 +320,7 @@ int scan_hex(const char* arg, int index) {
     }
 
     /* hexadecimal token has been found, print out the hexadecimal identified 0x or 0X */
-    printf("hex \"");
+    printf("hex: \"");
     printf("%c%c", arg[idx], arg[idx+1]);
     idx += 2;
     /* print all acceptable hexadecimal values, note there could be no values */
@@ -363,7 +363,7 @@ int scan_oct(const char* arg, int index) {
     }
     /* case where token is octal, and is ended upon reaching a nonoctal character */
     else {
-        printf("octal \"");
+        printf("octal: \"");
         for (int i = index; i < idx; i++) {
             printf("%c", arg[i]);
         }
@@ -398,7 +398,7 @@ int scan_dec(const char* arg, int index) {
         return index;
     }
     /* found a decimal */
-    printf("decimal \"");
+    printf("decimal: \"");
     for (int i = index; i < idx; i++) {
         printf("%c", arg[i]);
     }
@@ -427,7 +427,7 @@ int scan_float(const char* arg, int index) {
     }
 
     /* float found, all other possibilities have already been checked */
-    printf("float \"");
+    printf("float: \"");
     while (is_dec(arg[idx])) {
         printf("%c", arg[idx]);
         idx++;
@@ -579,7 +579,7 @@ void scan(const char *str) {
             }
 
             if (found) {
-                printf("string \"%.*s\"\n", j-i-1, str+i+1); /* j-i-1 is string len, s+i+1 is starting pos */
+                printf("string: \"%.*s\"\n", j-i-1, str+i+1); /* j-i-1 is string len, s+i+1 is starting pos */
                 i = j+1;
                 continue;
             }
@@ -602,7 +602,7 @@ void scan(const char *str) {
         /* OP found, increase index and print op */
         /* prev will be set if match is found */
         if (prev != NULL) {
-            printf("%s \"%.*s\"\n", prev->name, j-i, str+i); /* '.*' specifies length of string to print */
+            printf("%s: \"%.*s\"\n", prev->name, j-i, str+i); /* '.*' specifies length of string to print */
             i = j;
             continue;
         }
@@ -639,10 +639,10 @@ void scan(const char *str) {
             word[j-i] = '\0';
 
             if (ht_lookup(word) != NULL) {  /* keyword found */
-                printf("keyword \"%s\"\n", word);
+                printf("keyword: \"%s\"\n", word);
             }
             else {
-                printf("word \"%s\"\n", word);
+                printf("word: \"%s\"\n", word);
             }
             free(word);
             i = j;
@@ -650,7 +650,7 @@ void scan(const char *str) {
         }
 
         /* catch unrecognized char */
-        printf("unknown char \"%c\"\n", str[i]);
+        printf("unknown char: \"%c\"\n", str[i]);
         i++;
     }
 }
@@ -659,8 +659,8 @@ int main(int argc, char **argv) {
     op_load_data();
     word_load_file();
 
-    //char s[] = "filetest 123";
-    scan(argv[1]);
+    //char s[] = "///\"not a comment\" ";
+    scan(argv);
 
     op_free(op_main);
     ht_free();
